@@ -81,3 +81,27 @@ src/
 ├── App.tsx          # Component gốc & Cấu hình Routing
 └── main.tsx         # Entry point
 ```
+
+## 🌲 Quy tắc Git (Git Conventions)
+
+Để đảm bảo sự đồng bộ trong quá trình phát triển, dự án tuân thủ các quy tắc sau:
+
+### 1. Đặt tên nhánh (Branch Naming)
+Format chung: **`type/ten-chuc-nang`**
+
+Các tiền tố (**type**) quy định:
+- **`feature/`**: Phát triển tính năng mới.
+  - *Ví dụ:* `feature/login-page`, `feature/map-integration`
+- **`fix/`**: Sửa lỗi (Bug fix).
+  - *Ví dụ:* `fix/responsive-header`, `fix/login-error`
+- **`refactor/`**: Sắp xếp lại code, đổi tên file/folder (không thay đổi logic).
+  - *Ví dụ:* `refactor/folder-structure`, `refactor/auth-hook`
+- **`docs/`**: Cập nhật tài liệu (Readme, Documents).
+  - *Ví dụ:* `docs/update-readme`
+
+### 2. Quy trình Commit & Push
+1. Luôn `git pull` từ nhánh chính (`main`) trước khi tạo nhánh mới.
+2. Đặt message commit rõ ràng, có ý nghĩa (Tiếng Anh hoặc Tiếng Việt).
+   - *Tốt:* `feat: Add login form layout` hoặc `Add: Giao diện đăng nhập`
+   - *Không tốt:* `fix`, `update`, `code`, `abc`
+   
