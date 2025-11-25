@@ -25,7 +25,7 @@ import ReviewSection from "@/components/features/ReviewSection";
  */
 const StoreDetailPage = () => {
     const { id } = useParams();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, currentUser } = useAuth();
     const { getStoreById, getReviewsByStoreId, isFavorite, toggleFavorite } =
         useStoreData();
 
@@ -167,6 +167,7 @@ const StoreDetailPage = () => {
                         <ReviewSection 
                             reviews={reviews} 
                             isAuthenticated={isAuthenticated} 
+                            currentUser={currentUser}
                         />
                     </div>
 
