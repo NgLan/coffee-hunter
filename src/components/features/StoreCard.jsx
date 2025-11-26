@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Star, Heart, ArrowRight } from "lucide-react";
+import { MapPin, Star, Heart, ArrowRight, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,13 +38,15 @@ const StoreCard = ({ store, compact = false }) => {
                                     <span>{store.avg_rating}</span>
                                 </div>
                             </div>
-                            <div className="flex gap-2 text-xs">
-                                <span className="flex items-center gap-0.5 text-gray-600">
-                                    <MapPin className="h-3 w-3" /> 場所
-                                </span>
-                                <span className="flex items-center gap-0.5 text-gray-600">
-                                    ⏰ 時間
-                                </span>
+                            <div className="flex flex-col gap-0.5 text-xs text-gray-600">
+                                <div className="flex items-start gap-1 line-clamp-1">
+                                    <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
+                                    <span className="line-clamp-1">{store.address_jp}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3 flex-shrink-0" />
+                                    <span className="line-clamp-1">{store.opening_hours_jp}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
