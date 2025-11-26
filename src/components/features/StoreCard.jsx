@@ -17,35 +17,40 @@ const StoreCard = ({ store, compact = false }) => {
 
     if (compact) {
         return (
-            <Card className="overflow-hidden transition-shadow hover:shadow-md">
-                <CardContent className="p-3">
-                    <div className="flex gap-3">
+            <Card className="overflow-hidden transition-shadow hover:shadow-md border border-gray-200">
+                <CardContent className="p-2">
+                    <div className="flex gap-2">
                         {/* Thumbnail */}
-                        <img
-                            src={store.main_image_url}
-                            alt={store.name_jp}
-                            className="h-20 w-20 rounded-lg object-cover"
-                        />
-
-                        {/* Info */}
-                        <div className="flex-1">
-                            <h3 className="font-semibold text-sm line-clamp-1">{store.name_jp}</h3>
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                <span>{store.avg_rating}</span>
-                                <span>({store.review_count})</span>
+                        <div className="relative h-16 w-16 flex-shrink-0">
+                            <img
+                                src={store.main_image_url}
+                                alt={store.name_jp}
+                                className="h-full w-full rounded object-cover"
+                            />
+                            {/* Store ID Badge */}
+                            <div className="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center bg-orange-200 border border-orange-400 rounded-full text-xs font-bold">
+                                {store.id}
                             </div>
-                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                                {store.address_jp}
-                            </p>
                         </div>
 
-                        {/* Action */}
-                        <Link to={`/store/${store.id}`}>
-                            <Button size="icon" variant="ghost" className="h-8 w-8">
-                                <ArrowRight className="h-4 w-4" />
-                            </Button>
-                        </Link>
+                        {/* Info */}
+                        <div className="flex-1 flex flex-col justify-between">
+                            <div>
+                                <h3 className="font-semibold text-xs line-clamp-1">{store.name_jp}</h3>
+                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                    <span>{store.avg_rating}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 text-xs">
+                                <span className="flex items-center gap-0.5 text-gray-600">
+                                    <MapPin className="h-3 w-3" /> 場所
+                                </span>
+                                <span className="flex items-center gap-0.5 text-gray-600">
+                                    ⏰ 時間
+                                </span>
+                            </div>
+                        </div>
                     </div>
                 </CardContent>
             </Card>

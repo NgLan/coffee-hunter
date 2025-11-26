@@ -14,6 +14,14 @@ const CoffeeIcon = new L.Icon({
     popupAnchor: [0, -35]
 });
 
+// 1.5. Icon Quán Cafe (Phóng to 1.5x)
+const CoffeeIconExpanded = new L.Icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/924/924514.png',
+    iconSize: [70, 70],
+    iconAnchor: [35, 70],
+    popupAnchor: [0, -70]
+});
+
 // 2. Icon Quán Cafe (Đang chọn - Nổi bật)
 const SelectedIcon = new L.Icon({
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/787/787535.png',
@@ -32,17 +40,24 @@ const UserIcon = new L.Icon({
 });
 
 // --- COMPONENT PHỤ TRỢ ---
-const MapUpdater = ({ selectedStore, userLocation, focusUserTrigger }) => {
+const MapUpdater = ({ selectedStore, userLocation, focusUserTrigger, expandedStore }) => {
     const map = useMap();
 
-    // Effect 1: Bay tới quán khi chọn từ list
+    // Effect 1: Phóng to marker khi click trên map
     useEffect(() => {
-        if (selectedStore) {
+        if (expandedStore) {
+            map.flyTo([expandedStore.latitude, expandedStore.longitude], 17, { duration: 1.5 });
+        }
+    }, [expandedStore, map]);
+
+    // Effect 2: Bay tới quán khi chọn từ list (danh sách sidebar)
+    useEffect(() => {
+        if (selectedStore && !expandedStore) {
             map.flyTo([selectedStore.latitude, selectedStore.longitude], 16, { duration: 1.5 });
         }
-    }, [selectedStore, map]);
+    }, [selectedStore, expandedStore, map]);
 
-    // Effect 2: Bay tới vị trí người dùng khi bấm nút
+    // Effect 3: Bay tới vị trí người dùng khi bấm nút
     useEffect(() => {
         if (userLocation && focusUserTrigger > 0) {
             map.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.5 });
@@ -53,7 +68,7 @@ const MapUpdater = ({ selectedStore, userLocation, focusUserTrigger }) => {
 };
 
 // --- COMPONENT CHÍNH ---
-const MapView = ({ stores, selectedStore, onSelectStore }) => {
+const MapView = ({ stores, selectedStore, onSelectStore, expandedStore, onSetExpandedStore }) => {
     // Tọa độ mặc định (Hồ Hoàn Kiếm)
     const defaultCenter = [21.0285, 105.8542];
 
@@ -62,7 +77,7 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
     // State trigger để kích hoạt việc zoom vào user
     const [focusUserTrigger, setFocusUserTrigger] = useState(0);
 
-    // Hàm lấy vị trí thật
+    // Hàn lấy vị trí thật
     const handleGetLocation = () => {
         if ("geolocation" in navigator) {
             navigator.geolocation.getCurrentPosition(
@@ -87,6 +102,13 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
         }
     };
 
+    // Xử lý khi click vào marker trên map
+    const handleMarkerClick = (store) => {
+        // Click marker: phóng to + mở detail (gọi onSelectStore)
+        onSetExpandedStore(store);
+        onSelectStore(store);
+    };
+
     // Tự động lấy vị trí khi vào app lần đầu (Optional)
     useEffect(() => {
         handleGetLocation();
@@ -107,6 +129,7 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
                     selectedStore={selectedStore}
                     userLocation={userLocation}
                     focusUserTrigger={focusUserTrigger}
+                    expandedStore={expandedStore}
                 />
 
                 {/* Marker Người dùng */}
@@ -121,9 +144,9 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
                     <Marker
                         key={store.id}
                         position={[store.latitude, store.longitude]}
-                        icon={selectedStore?.id === store.id ? SelectedIcon : CoffeeIcon}
+                        icon={expandedStore?.id === store.id ? CoffeeIconExpanded : CoffeeIcon}
                         eventHandlers={{
-                            click: () => onSelectStore(store),
+                            click: () => handleMarkerClick(store),
                         }}
                     >
                         <Popup>

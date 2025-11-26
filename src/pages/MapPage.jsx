@@ -20,6 +20,7 @@ const MapPage = () => {
     // State quản lý việc chọn quán
     const [selectedStore, setSelectedStore] = useState(null);
     const [showList, setShowList] = useState(true);
+    const [expandedStore, setExpandedStore] = useState(null);
 
     // Filter states
     const [selectedSpaceTypes, setSelectedSpaceTypes] = useState([]);
@@ -43,6 +44,7 @@ const MapPage = () => {
 
     const handleBackToList = () => {
         setSelectedStore(null); // Reset về null để hiện lại danh sách
+        setExpandedStore(null); // Reset expanded marker
     };
 
     return (
@@ -65,54 +67,37 @@ const MapPage = () => {
                                 onBack={handleBackToList}
                             />
                         ) : (
-                            // TRƯỜNG HỢP 2: CHƯA CHỌN QUÁN -> HIỆN DANH SÁCH + FILTER
+                            // TRƯỜNG HỢP 2: CHƯA CHỌN QUÁN -> HIỆN DANH SÁCH (ko filter)
                             <div className="flex flex-col h-full">
-                                {/* FILTER SECTION - 50% chiều cao */}
-                                <div className="h-1/2 border-b bg-white overflow-hidden flex flex-col">
-                                    <div className="p-4 shrink-0">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <h2 className="text-lg font-semibold">カフェ一覧 ({filteredStores.length})</h2>
+                                {/* LIST SECTION - FULL HEIGHT */}
+                                <div className="h-full bg-white overflow-hidden flex flex-col">
+                                    {/* Header */}
+                                    <div className="p-3 shrink-0 border-b bg-white">
+                                        <div className="flex items-center justify-between">
+                                            <h2 className="text-sm font-semibold">カフェ一覧</h2>
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="lg:hidden"
+                                                className="lg:hidden h-6 w-6"
                                                 onClick={() => setShowList(false)}
                                             >
                                                 ✕
                                             </Button>
                                         </div>
                                     </div>
-                                    <ScrollArea className="flex-1">
-                                        <div className="px-4 pb-4">
-                                            <FilterPanel
-                                                selectedSpaceTypes={selectedSpaceTypes}
-                                                onSpaceTypesChange={setSelectedSpaceTypes}
-                                                selectedServices={selectedServices}
-                                                onServicesChange={setSelectedServices}
-                                                sortBy={sortBy}
-                                                onSortChange={setSortBy}
-                                                minRating={minRating}
-                                                onMinRatingChange={setMinRating}
-                                            />
-                                        </div>
-                                    </ScrollArea>
-                                </div>
 
-                                {/* LIST SECTION - 50% chiều cao */}
-                                <div className="h-1/2 bg-slate-50 overflow-hidden flex flex-col">
+                                    {/* Store List */}
                                     <ScrollArea className="flex-1">
-                                        <div className="p-4">
-                                            <div className="space-y-3">
-                                                {filteredStores.map((store) => (
-                                                    <div
-                                                        key={store.id}
-                                                        onClick={() => handleSelectStore(store)}
-                                                        className="cursor-pointer transition-transform hover:scale-[1.01]"
-                                                    >
-                                                        <StoreCard store={store} compact />
-                                                    </div>
-                                                ))}
-                                            </div>
+                                        <div className="p-2 space-y-2">
+                                            {filteredStores.map((store) => (
+                                                <div
+                                                    key={store.id}
+                                                    onClick={() => handleSelectStore(store)}
+                                                    className="cursor-pointer transition-transform hover:scale-[1.01]"
+                                                >
+                                                    <StoreCard store={store} compact />
+                                                </div>
+                                            ))}
                                         </div>
                                     </ScrollArea>
                                 </div>
@@ -145,6 +130,8 @@ const MapPage = () => {
                         stores={filteredStores}
                         selectedStore={selectedStore}
                         onSelectStore={handleSelectStore}
+                        expandedStore={expandedStore}
+                        onSetExpandedStore={setExpandedStore}
                     />
                 </div>
             </div>
