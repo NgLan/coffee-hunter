@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Bell, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +25,16 @@ import { MOCK_NOTIFICATIONS } from "@/mocks/data/notifications";
 const Header = () => {
     const navigate = useNavigate();
     const { currentUser, isAuthenticated, logout } = useAuth();
+    const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
+    
+    // Cập nhật search query từ URL params khi trang load hoặc URL thay đổi
+    useEffect(() => {
+        const q = searchParams.get('q');
+        if (q) {
+            setSearchQuery(q);
+        }
+    }, [searchParams]);
 
     // Đếm số thông báo chưa đọc
     const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.is_read).length;

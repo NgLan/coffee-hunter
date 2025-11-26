@@ -31,4 +31,6 @@ export interface StoreDetail extends Store {
     images: string[];      // Mảng URL từ bảng store_images
     menu: MenuItem[];      // Mảng object từ bảng menu_items
     services: string[];    // Mảng tên service từ bảng services join qua store_services
+    space_type: "indoor" | "outdoor" | "both"; // Loại không gian: trong nhà, ngoài trời, hoặc cả hai
+    distance?: number;     // Khoảng cách từ vị trí hiện tại (km) - optional, dùng cho display
 }
