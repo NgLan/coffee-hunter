@@ -10,32 +10,33 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-import { SERVICE_OPTIONS } from "@/mocks/data/constants";
+import { SERVICE_OPTIONS, SPACE_TYPE_OPTIONS, RATING_OPTIONS } from "@/mocks/data/constants";
 
 /**
  * Filter Panel Component - Panel lọc và sắp xếp quán cà phê
+ * @param {Array} selectedSpaceTypes - Danh sách space types đã chọn
+ * @param {Function} onSpaceTypesChange - Callback khi thay đổi space types
  * @param {Array} selectedServices - Danh sách services đã chọn
  * @param {Function} onServicesChange - Callback khi thay đổi services
- * @param {string} sortBy - Tiêu chí sắp xếp hiện tại
- * @param {Function} onSortChange - Callback khi thay đổi sort
  * @param {number} minRating - Rating tối thiểu
  * @param {Function} onMinRatingChange - Callback khi thay đổi rating
  */
 const FilterPanel = ({
+    selectedSpaceTypes = [],
+    onSpaceTypesChange,
     selectedServices = [],
     onServicesChange,
-    sortBy = "rating",
-    onSortChange,
     minRating = 0,
     onMinRatingChange,
 }) => {
+    // Xử lý toggle space type
+    const handleSpaceTypeToggle = (spaceType) => {
+        const newSpaceTypes = selectedSpaceTypes.includes(spaceType)
+            ? selectedSpaceTypes.filter((s) => s !== spaceType)
+            : [...selectedSpaceTypes, spaceType];
+        onSpaceTypesChange(newSpaceTypes);
+    };
+
     // Xử lý toggle service
     const handleServiceToggle = (service) => {
         const newServices = selectedServices.includes(service)
@@ -46,32 +47,59 @@ const FilterPanel = ({
 
     // Reset filters
     const handleReset = () => {
+        onSpaceTypesChange([]);
         onServicesChange([]);
         onMinRatingChange(0);
-        onSortChange("rating");
     };
 
     const FilterContent = () => (
         <div className="space-y-6">
+            {/* Space Type Filter (Indoor/Outdoor) */}
+            <div>
+                <Label className="mb-3 block text-base font-semibold">空間タイプ</Label>
+                <div className="space-y-3">
+                    {SPACE_TYPE_OPTIONS.map((spaceType) => (
+                        <div key={spaceType.value} className="flex items-center gap-2">
+                            <Checkbox
+                                id={spaceType.value}
+                                checked={selectedSpaceTypes.includes(spaceType.value)}
+                                onCheckedChange={() => handleSpaceTypeToggle(spaceType.value)}
+                            />
+                            <Label
+                                htmlFor={spaceType.value}
+                                className="cursor-pointer text-sm font-normal"
+                            >
+                                {spaceType.label_jp}
+                            </Label>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             {/* Rating Filter */}
             <div>
                 <Label className="mb-3 flex items-center gap-2 text-base font-semibold">
                     <Star className="h-4 w-4" />
                     評価
                 </Label>
-                <Select
-                    value={minRating.toString()}
-                    onValueChange={(value) => onMinRatingChange(Number(value))}
-                >
-                    <SelectTrigger>
-                        <SelectValue placeholder="評価を選択" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="0">すべて</SelectItem>
-                        <SelectItem value="4">4.0以上</SelectItem>
-                        <SelectItem value="4.5">4.5以上</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="space-y-3">
+                    {RATING_OPTIONS.map((option) => (
+                        <div key={option.value} className="flex items-center gap-2">
+                            <Checkbox
+                                id={`rating-${option.value}`}
+                                checked={minRating === option.value}
+                                onCheckedChange={() => onMinRatingChange(option.value)}
+                            />
+                            <Label
+                                htmlFor={`rating-${option.value}`}
+                                className="cursor-pointer text-sm font-normal flex items-center gap-1"
+                            >
+                                {option.value > 0 && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                                {option.label_jp}
+                            </Label>
+                        </div>
+                    ))}
+                </div>
             </div>
 
             {/* Services Filter */}
@@ -94,21 +122,6 @@ const FilterPanel = ({
                         </div>
                     ))}
                 </div>
-            </div>
-
-            {/* Sort */}
-            <div>
-                <Label className="mb-3 block text-base font-semibold">並び替え</Label>
-                <Select value={sortBy} onValueChange={onSortChange}>
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="rating">評価順</SelectItem>
-                        <SelectItem value="reviews">レビュー数順</SelectItem>
-                        <SelectItem value="name">名前順</SelectItem>
-                    </SelectContent>
-                </Select>
             </div>
 
             {/* Reset Button */}
