@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Star, Heart, ArrowRight, Clock } from "lucide-react";
+import { MapPin, Star, Heart, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,38 +17,35 @@ const StoreCard = ({ store, compact = false }) => {
 
     if (compact) {
         return (
-            <Card className="overflow-hidden transition-shadow hover:shadow-md border border-gray-200">
-                <CardContent className="p-2">
-                    <div className="flex gap-2">
+            <Card className="overflow-hidden transition-shadow hover:shadow-md">
+                <CardContent className="p-3">
+                    <div className="flex gap-3">
                         {/* Thumbnail */}
-                        <div className="h-16 w-16 flex-shrink-0">
-                            <img
-                                src={store.main_image_url}
-                                alt={store.name_jp}
-                                className="h-full w-full rounded object-cover"
-                            />
-                        </div>
+                        <img
+                            src={store.main_image_url}
+                            alt={store.name_jp}
+                            className="h-20 w-20 rounded-lg object-cover"
+                        />
 
                         {/* Info */}
-                        <div className="flex-1 flex flex-col justify-between">
-                            <div>
-                                <h3 className="font-semibold text-xs line-clamp-1">{store.name_jp}</h3>
-                                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
-                                    <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                    <span>{store.avg_rating}</span>
-                                </div>
+                        <div className="flex-1">
+                            <h3 className="font-semibold text-sm line-clamp-1">{store.name_jp}</h3>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                                <span>{store.avg_rating}</span>
+                                <span>({store.review_count})</span>
                             </div>
-                            <div className="flex flex-col gap-0.5 text-xs text-gray-600">
-                                <div className="flex items-start gap-1 line-clamp-1">
-                                    <MapPin className="h-3 w-3 flex-shrink-0 mt-0.5" />
-                                    <span className="line-clamp-1">{store.address_jp}</span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                    <Clock className="h-3 w-3 flex-shrink-0" />
-                                    <span className="line-clamp-1">{store.opening_hours_jp}</span>
-                                </div>
-                            </div>
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                                {store.address_jp}
+                            </p>
                         </div>
+
+                        {/* Action */}
+                        <Link to={`/store/${store.id}`}>
+                            <Button size="icon" variant="ghost" className="h-8 w-8">
+                                <ArrowRight className="h-4 w-4" />
+                            </Button>
+                        </Link>
                     </div>
                 </CardContent>
             </Card>
