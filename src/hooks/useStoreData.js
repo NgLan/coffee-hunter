@@ -37,8 +37,8 @@ export const useStoreData = () => {
         return stores.filter((store) => favorites.includes(store.id));
     };
 
-    // Filter stores theo rating và services
-    const filterStores = (minRating = 0, selectedServices = []) => {
+    // Filter stores theo rating, services và space_type
+    const filterStores = (minRating = 0, selectedServices = [], selectedSpaceTypes = []) => {
         return stores.filter((store) => {
             // Filter theo rating
             const ratingMatch = store.avg_rating >= minRating;
@@ -48,7 +48,15 @@ export const useStoreData = () => {
                 selectedServices.length === 0 ||
                 selectedServices.every((service) => store.services.includes(service));
 
-            return ratingMatch && servicesMatch;
+            // Filter theo space_type (indoor/outdoor)
+            const spaceTypeMatch =
+                selectedSpaceTypes.length === 0 ||
+                selectedSpaceTypes.some(
+                    (spaceType) =>
+                        store.space_type === "both" || store.space_type === spaceType
+                );
+
+            return ratingMatch && servicesMatch && spaceTypeMatch;
         });
     };
 
