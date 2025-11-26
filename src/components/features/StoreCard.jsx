@@ -21,16 +21,12 @@ const StoreCard = ({ store, compact = false }) => {
                 <CardContent className="p-2">
                     <div className="flex gap-2">
                         {/* Thumbnail */}
-                        <div className="relative h-16 w-16 flex-shrink-0">
+                        <div className="h-16 w-16 flex-shrink-0">
                             <img
                                 src={store.main_image_url}
                                 alt={store.name_jp}
                                 className="h-full w-full rounded object-cover"
                             />
-                            {/* Store ID Badge */}
-                            <div className="absolute -right-1 -top-1 h-5 w-5 flex items-center justify-center bg-orange-200 border border-orange-400 rounded-full text-xs font-bold">
-                                {store.id}
-                            </div>
                         </div>
 
                         {/* Info */}
