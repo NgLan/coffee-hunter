@@ -63,4 +63,28 @@ export const MOCK_REVIEWS: Review[] = [
         user_name: "佐藤花子",
         user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sato",
     },
+    {
+        id: 5,
+        user_id: 3,
+        store_id: 1,
+        rating: 4,
+        comment: "コーヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
+        created_at: "2024-11-14T15:45:00",
+        images: [],
+        user_name: "佐藤花子",
+        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sato",
+    },
+    {
+        id: 6,
+        user_id: 2,
+        store_id: 1,
+        rating: 2,
+        comment: "コーヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
+        created_at: "2024-11-14T15:45:00",
+        images: [
+            "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600",
+        ],
+        user_name: "佐藤花子",
+        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sato",
+    },
 ];
