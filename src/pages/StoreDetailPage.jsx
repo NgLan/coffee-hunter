@@ -39,6 +39,16 @@ const StoreDetailPage = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const itemsPerPage = 6;
+  const totalPages = Math.ceil(store.menu.length / itemsPerPage);
+
+  const currentItems = store.menu.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
 
   if (!store) {
     return (
@@ -90,9 +100,7 @@ const StoreDetailPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setSelectedImage(0)
-                }
+                onClick={() => setSelectedImage(0)}
               >
                 &lt;&lt;
               </Button>
@@ -129,9 +137,7 @@ const StoreDetailPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setSelectedImage(store.images.length - 1)
-                }
+                onClick={() => setSelectedImage(store.images.length - 1)}
               >
                 &gt;&gt;
               </Button>
@@ -230,11 +236,14 @@ const StoreDetailPage = () => {
         </Card>
 
         {/* Menu Section */}
+        {/* Menu Section */}
         <Card className="mb-6">
           <CardContent className="p-6">
             <h3 className="mb-4 text-lg font-semibold">メニュー</h3>
+
+            {/* Grid menu */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {store.menu.map((item) => (
+              {currentItems.map((item) => (
                 <div key={item.id} className="flex gap-4 rounded-lg border p-4">
                   <img
                     src={item.image_url}
@@ -252,6 +261,33 @@ const StoreDetailPage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+
+            {/* Pagination */}
+            <div className="mt-6 flex items-center justify-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              >
+                &lt;
+              </Button>
+
+              <span className="text-sm font-medium">
+                Trang {currentPage} / {totalPages}
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((p) => Math.min(totalPages, p + 1))
+                }
+              >
+                &gt;
+              </Button>
             </div>
           </CardContent>
         </Card>
