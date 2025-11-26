@@ -5,8 +5,9 @@ import Header from "@/components/layout/Header";
 import StoreCard from "@/components/features/StoreCard";
 import FilterPanel from "@/components/features/FilterPanel";
 import MapView from "@/components/features/MapView";
-import StoreDetailPanel from "@/components/features/StoreDetailPanel"; // <--- IMPORT MỚI
+import StoreDetailPanel from "@/components/features/StoreDetailPanel";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { useStoreData } from "@/hooks/useStoreData";
 
 /**
@@ -21,12 +22,13 @@ const MapPage = () => {
     const [showList, setShowList] = useState(true);
 
     // Filter states
+    const [selectedSpaceTypes, setSelectedSpaceTypes] = useState([]);
     const [selectedServices, setSelectedServices] = useState([]);
     const [minRating, setMinRating] = useState(0);
     const [sortBy, setSortBy] = useState("rating");
 
     const filteredStores = sortStores(
-        filterStores(minRating, selectedServices),
+        filterStores(minRating, selectedServices, selectedSpaceTypes),
         sortBy
     );
 
@@ -48,40 +50,12 @@ const MapPage = () => {
             <Header />
 
             <div className="relative flex flex-1 overflow-hidden">
-                {/* --- KHU VỰC BẢN ĐỒ (Đã thay thế Mock UI) --- */}
-                <div className="relative flex-1 h-full w-full">
-                    {/* Nút Back về Home */}
-                    <div className="absolute left-4 top-4 z-[400] flex gap-2">
-                        <Link to="/">
-                            <Button variant="secondary" size="icon" className="shadow-md">
-                                <ArrowLeft className="h-4 w-4" />
-                            </Button>
-                        </Link>
-                        {/* Nút Toggle List trên Mobile */}
-                        <Button
-                            variant="secondary"
-                            size="icon"
-                            className="lg:hidden shadow-md"
-                            onClick={() => setShowList(!showList)}
-                        >
-                            <List className="h-4 w-4" />
-                        </Button>
-                    </div>
-
-                    {/* Component Bản đồ thật */}
-                    <MapView
-                        stores={filteredStores}
-                        selectedStore={selectedStore}
-                        onSelectStore={handleSelectStore}
-                    />
-                </div>
-
-                {/* --- SIDEBAR LIST (Giữ nguyên logic cũ) --- */}
+                {/* --- SIDEBAR (BÊN TRÁI) --- */}
                 <div
-                    className={`absolute right-0 top-0 h-full w-full bg-background transition-transform lg:relative lg:w-96 lg:translate-x-0 z-[500] lg:z-auto ${showList ? "translate-x-0" : "translate-x-full"
+                    className={`absolute left-0 top-0 h-full w-full bg-background transition-transform lg:relative lg:w-96 lg:translate-x-0 z-[500] lg:z-auto ${showList ? "translate-x-0" : "-translate-x-full"
                         }`}
                 >
-                    <div className="flex h-full flex-col border-l shadow-xl lg:shadow-none bg-white">
+                    <div className="flex h-full flex-col border-r shadow-xl lg:shadow-none bg-white overflow-hidden">
 
                         {/* LOGIC CHUYỂN ĐỔI: LIST vs DETAIL */}
                         {selectedStore ? (
@@ -92,48 +66,86 @@ const MapPage = () => {
                             />
                         ) : (
                             // TRƯỜNG HỢP 2: CHƯA CHỌN QUÁN -> HIỆN DANH SÁCH + FILTER
-                            <>
-                                <div className="border-b p-4 bg-white z-10">
-                                    <div className="mb-4 flex items-center justify-between">
-                                        <h2 className="text-lg font-semibold">
-                                            カフェ一覧 ({filteredStores.length})
-                                        </h2>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="lg:hidden"
-                                            onClick={() => setShowList(false)}
-                                        >
-                                            ✕
-                                        </Button>
-                                    </div>
-
-                                    <FilterPanel
-                                        selectedServices={selectedServices}
-                                        onServicesChange={setSelectedServices}
-                                        sortBy={sortBy}
-                                        onSortChange={setSortBy}
-                                        minRating={minRating}
-                                        onMinRatingChange={setMinRating}
-                                    />
-                                </div>
-
-                                <div className="flex-1 overflow-y-auto p-4 bg-slate-50">
-                                    <div className="space-y-3">
-                                        {filteredStores.map((store) => (
-                                            <div
-                                                key={store.id}
-                                                onClick={() => handleSelectStore(store)}
-                                                className="cursor-pointer transition-transform hover:scale-[1.01]"
+                            <div className="flex flex-col h-full">
+                                {/* FILTER SECTION - 50% chiều cao */}
+                                <div className="h-1/2 border-b bg-white overflow-hidden flex flex-col">
+                                    <div className="p-4 shrink-0">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h2 className="text-lg font-semibold">カフェ一覧 ({filteredStores.length})</h2>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="lg:hidden"
+                                                onClick={() => setShowList(false)}
                                             >
-                                                <StoreCard store={store} compact />
-                                            </div>
-                                        ))}
+                                                ✕
+                                            </Button>
+                                        </div>
                                     </div>
+                                    <ScrollArea className="flex-1">
+                                        <div className="px-4 pb-4">
+                                            <FilterPanel
+                                                selectedSpaceTypes={selectedSpaceTypes}
+                                                onSpaceTypesChange={setSelectedSpaceTypes}
+                                                selectedServices={selectedServices}
+                                                onServicesChange={setSelectedServices}
+                                                sortBy={sortBy}
+                                                onSortChange={setSortBy}
+                                                minRating={minRating}
+                                                onMinRatingChange={setMinRating}
+                                            />
+                                        </div>
+                                    </ScrollArea>
                                 </div>
-                            </>
+
+                                {/* LIST SECTION - 50% chiều cao */}
+                                <div className="h-1/2 bg-slate-50 overflow-hidden flex flex-col">
+                                    <ScrollArea className="flex-1">
+                                        <div className="p-4">
+                                            <div className="space-y-3">
+                                                {filteredStores.map((store) => (
+                                                    <div
+                                                        key={store.id}
+                                                        onClick={() => handleSelectStore(store)}
+                                                        className="cursor-pointer transition-transform hover:scale-[1.01]"
+                                                    >
+                                                        <StoreCard store={store} compact />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </ScrollArea>
+                                </div>
+                            </div>
                         )}
                     </div>
+                </div>
+
+                {/* --- KHU VỰC BẢN ĐỒ (BÊN PHẢI) --- */}
+                <div className="relative flex-1 h-full w-full">
+                    {/* Nút Back về Home và Toggle List */}
+                    <div className="absolute right-4 top-4 z-[400] flex gap-2">
+                        <Button
+                            variant="secondary"
+                            size="icon"
+                            className="lg:hidden shadow-md"
+                            onClick={() => setShowList(!showList)}
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                        <Link to="/">
+                            <Button variant="secondary" size="icon" className="shadow-md">
+                                <ArrowLeft className="h-4 w-4" />
+                            </Button>
+                        </Link>
+                    </div>
+
+                    {/* Component Bản đồ thật */}
+                    <MapView
+                        stores={filteredStores}
+                        selectedStore={selectedStore}
+                        onSelectStore={handleSelectStore}
+                    />
                 </div>
             </div>
         </div>

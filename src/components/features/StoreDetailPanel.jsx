@@ -46,7 +46,7 @@ const StoreDetailPanel = ({ store, onBack }) => {
 
                     <hr />
 
-                    {/* Thông tin cơ bản */}
+                    {/* 基本情報 */}
                     <div className="space-y-4">
                         <div className="flex gap-3 text-gray-700">
                             <MapPin className="w-5 h-5 shrink-0 text-primary" />
@@ -66,7 +66,7 @@ const StoreDetailPanel = ({ store, onBack }) => {
 
                     <hr />
 
-                    {/* Tiện ích (Tags) */}
+                    {/* 設備・サービス */}
                     <div>
                         <h3 className="font-semibold mb-3">設備・サービス </h3>
                         <div className="flex flex-wrap gap-2">
@@ -78,7 +78,7 @@ const StoreDetailPanel = ({ store, onBack }) => {
                         </div>
                     </div>
 
-                    {/* Gallery ảnh nhỏ (Theo wireframe) */}
+                    {/* ギャラリー */}
                     <div>
                         <h3 className="font-semibold mb-3 flex items-center gap-2">
                             <ImageIcon className="w-4 h-4" /> ギャラリー
@@ -92,7 +92,7 @@ const StoreDetailPanel = ({ store, onBack }) => {
                         </div>
                     </div>
 
-                    <div className="h-10"></div> {/* Spacer dưới cùng */}
+                    <div className="h-10"></div> {/* Spacer */}
                 </div>
             </ScrollArea>
         </div>

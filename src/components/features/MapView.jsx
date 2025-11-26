@@ -77,22 +77,20 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
                 (error) => {
                     console.error("Lỗi lấy vị trí:", error);
                     // Fallback: Nếu lỗi (hoặc user từ chối), giả vờ đang ở Nhà Hát Lớn Hà Nội để demo cho đẹp
-                    alert("Không lấy được vị trí thật. Đang dùng vị trí demo (Hà Nội).");
+                    alert("位置情報を取得できません。デモ位置を使用しています。");
                     setUserLocation({ lat: 21.0250, lng: 105.8560 });
                     setFocusUserTrigger(prev => prev + 1);
                 }
             );
         } else {
-            alert("Trình duyệt không hỗ trợ định vị!");
+            alert("ブラウザは位置情報をサポートしていません!");
         }
     };
 
     // Tự động lấy vị trí khi vào app lần đầu (Optional)
     useEffect(() => {
         handleGetLocation();
-    }, []);
-
-    return (
+    }, []); return (
         <div className="relative h-full w-full">
             <MapContainer
                 center={defaultCenter}
@@ -114,7 +112,7 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
                 {/* Marker Người dùng */}
                 {userLocation && (
                     <Marker position={[userLocation.lat, userLocation.lng]} icon={UserIcon}>
-                        <Popup>Bạn đang ở đây (Near by you)</Popup>
+                        <Popup>あなたはここにいます</Popup>
                     </Marker>
                 )}
 
@@ -144,7 +142,7 @@ const MapView = ({ stores, selectedStore, onSelectStore }) => {
                     size="icon"
                     className="rounded-full shadow-xl bg-white text-primary hover:bg-gray-100 h-12 w-12"
                     onClick={handleGetLocation}
-                    title="Vị trí của tôi"
+                    title="私の位置"
                 >
                     <Navigation className="h-6 w-6 fill-current" />
                 </Button>
