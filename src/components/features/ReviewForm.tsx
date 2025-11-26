@@ -32,25 +32,55 @@ export const ReviewForm: React.FC<Props> = ({ onClose, onSubmit, authorName }) =
     const files = e.target.files;
     if (!files) return;
 
-    const out: string[] = [];
-    const limit = Math.min(files.length, 3);
-    let done = 0;
+    const allowedExtensions = /\.(jpe?g|png)$/i;
+    const maxSize = 5 * 1024 * 1024; // 5MB
 
-    for (let i = 0; i < limit; i++) {
-      const f = files[i];
-      const reader = new FileReader();
-
-      reader.onload = (ev) => {
-        if (typeof ev.target?.result === 'string') out.push(ev.target.result);
-        done++;
-
-        if (done === limit) {
-          setImages((prev) => [...prev, ...out].slice(0, 3));
-        }
-      };
-
-      reader.readAsDataURL(f);
+    // temp container no longer required since we use Promise.all
+    const maxSlots = 3 - images.length;
+    if (maxSlots <= 0) {
+      setError('画像は最大3枚までです。');
+      return;
     }
+
+    const readPromises: Promise<string>[] = [];
+    let queued = 0;
+
+    for (let i = 0; i < files.length && queued < maxSlots; i++) {
+      const f = files[i];
+
+      // Validate file extension
+      if (!allowedExtensions.test(f.name)) {
+        setError('画像はjpg、jpeg、png形式でなければなりません。');
+        continue; // skip invalid file
+      }
+
+      // Validate file size
+      if (f.size > maxSize) {
+        setError('画像のサイズは5MB未満である必要があります。');
+        continue; // skip large file
+      }
+
+      queued++;
+      readPromises.push(
+        new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            if (typeof ev.target?.result === 'string') resolve(ev.target.result);
+            else resolve('');
+          };
+          reader.readAsDataURL(f);
+        })
+      );
+    }
+
+    if (readPromises.length === 0) return;
+
+    Promise.all(readPromises).then((dataUrls) => {
+      setImages((prev) => [...prev, ...dataUrls].slice(0, 3));
+      setError('');
+      // reset file input so user can select same file again if needed
+      if (fileRef.current) fileRef.current.value = '';
+    });
   };
 
   const handleRemoveImage = (idx: number) => {
@@ -59,8 +89,9 @@ export const ReviewForm: React.FC<Props> = ({ onClose, onSubmit, authorName }) =
 
   const validateAndSubmit = () => {
     if (rating < 1) return setError('星評価を1つ以上選択してください。');
-    if (comment.trim().length < 5) return setError('コメントは5文字以上で入力してください。');
+    if (comment.trim().length < 20) return setError('コメントは20文字以上で入力してください。');
 
+    setError('');
     onSubmit({
       rating,
       comment: comment.trim(),
@@ -116,19 +147,16 @@ export const ReviewForm: React.FC<Props> = ({ onClose, onSubmit, authorName }) =
 
         {/* Images */}
         <div className={styles.row}>
-          <label className={styles.label}>画像を選択（モック）</label>
+          <label className={styles.label}>画像を選択</label>
 
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept=".jpg,.jpeg,.png"
               multiple
               onChange={handleChooseImage}
             />
-            <span style={{ fontSize: 13, color: '#666' }}>
-              ※ 実際のアップロードは行われません。サムネイルのみ表示します。
-            </span>
           </div>
 
           {images.length > 0 && (
@@ -162,10 +190,10 @@ export const ReviewForm: React.FC<Props> = ({ onClose, onSubmit, authorName }) =
         {error && <div className={styles.error}>{error}</div>}
 
         {/* Actions */}
-        <div className={styles.controls}>
-          <button className={`${styles.btn} ${styles.ghost}`} onClick={onClose}>キャンセル</button>
-          <button className={`${styles.btn} ${styles.primary}`} onClick={validateAndSubmit}>送信</button>
-        </div>
+              <div className={styles.controls}>
+                <button className={`${styles.btn} ${styles.ghost} ${styles.cancel}`} onClick={onClose}>キャンセル</button>
+                <button className={`${styles.btn} ${styles.primary}`} onClick={validateAndSubmit}>送信</button>
+              </div>
 
       </div>
     </div>

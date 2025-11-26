@@ -4,7 +4,7 @@ import { ReviewForm } from "./ReviewForm";
 import { LoginPrompt } from "./LoginPrompt";
 
 import { AuthContext } from "../../contexts/AuthContext";
-import { addReview } from "../../mocks/data/reviews";
+import { useStoreData } from "@/hooks/useStoreData";
 
 type Props = {
   storeId: number; // luôn bắt buộc
@@ -42,6 +42,8 @@ export const ReviewTrigger: React.FC<Props> = ({ storeId, onNewReview }) => {
   // Submit Review
   // ==========================
 
+  const { addReview } = useStoreData();
+
   const handleSubmit = (payload: { rating: number; comment: string; images: string[] }) => {
     if (!auth?.user) return;
 
@@ -55,10 +57,10 @@ export const ReviewTrigger: React.FC<Props> = ({ storeId, onNewReview }) => {
       images: payload.images,
     };
 
-    // Lưu review vào localStorage
-    const created = addReview(newReviewData);
+    const created = addReview(storeId, newReviewData);
 
-    // Trả ra parent để UI update ngay
+    // If addReview returns nothing (our hook returns void in earlier version), try to read persisted review from localStorage
+    // but here our useStoreData addReview returns undefined, so for immediate UI update we rely on onNewReview
     onNewReview?.(created);
 
     setShowForm(false);
