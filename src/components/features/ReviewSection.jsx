@@ -79,8 +79,7 @@ const ReviewSection = ({
           const aHasImg = a.images && a.images.length > 0 ? 1 : 0;
           const bHasImg = b.images && b.images.length > 0 ? 1 : 0;
           return (
-            bHasImg - aHasImg ||
-            new Date(b.created_at) - new Date(a.created_at)
+            bHasImg - aHasImg || new Date(b.created_at) - new Date(a.created_at)
           );
         });
         break;
@@ -106,10 +105,7 @@ const ReviewSection = ({
     startIndex + itemsPerPage
   );
 
-  useEffect(
-    () => setCurrentPage(1),
-    [reviews.length, effectiveCurrentUser]
-  );
+  useEffect(() => setCurrentPage(1), [reviews.length, effectiveCurrentUser]);
 
   // Hiệu ứng highlight khi thêm review mới
   useEffect(() => {
@@ -334,50 +330,38 @@ const ReviewSection = ({
           })}
         </div>
 
-        {/* FOOTER & PAGINATION */}
-        <div className="mt-4 pb-6 flex flex-col items-center">
-          <div className="mb-3 text-sm text-muted-foreground">
-            表示: {paginatedReviews.length} / {sortedReviews.length} 件
-          </div>
-
-          <div className="flex items-center gap-2">
+        {/* PAGINATION */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex items-center justify-center gap-2">
+            {/* Nút Trang Trước */}
             <Button
-              size="sm"
               variant="outline"
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            >
-              最初へ
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
+              size="icon"
+              // 🚀 Sửa: Đảm bảo trang không nhỏ hơn 1
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
+              className="h-8 w-8"
             >
-              前へ
+              <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            <div className="flex items-center gap-1">{renderPageButtons()}</div>
+            <span className="text-sm font-medium">
+              {currentPage} / {totalPages}
+            </span>
 
+            {/* Nút Trang Sau */}
             <Button
-              size="sm"
               variant="outline"
+              size="icon"
+              // 🚀 Sửa: Đảm bảo trang không lớn hơn totalPages
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
+              className="h-8 w-8"
             >
-              次へ
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            >
-              最後へ
+              <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+        )}
 
         {/* MODALS */}
         {showLoginPrompt && (

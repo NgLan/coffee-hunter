@@ -213,7 +213,7 @@ const StoreDetailPage = () => {
             </Card>
 
             <Card>
-              <CardContent className="p-6 pb-0">
+              <CardContent className="p-6">
                 <ReviewSection
                   reviews={reviews}
                   isAuthenticated={isAuthenticated}
