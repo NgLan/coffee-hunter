@@ -275,7 +275,7 @@ const StoreDetailPage = () => {
               </Button>
 
               <span className="text-sm font-medium">
-                Trang {currentPage} / {totalPages}
+                {currentPage} / {totalPages}
               </span>
 
               <Button
