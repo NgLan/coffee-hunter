@@ -90,11 +90,17 @@ export const useStoreData = () => {
         // Persist review to localStorage via mocks helper
         // We pass a copy: the mock's addReview expects fields without 'id' and 'created_at'
         const payloadToPersist = {
-            ...newReview,
-            store_id: storeId,
-            // ensure we don't include keys that mock doesn't expect id/created_at
-        };
+                ...newReview,
+                store_id: storeId,
+                rating: typeof newReview.rating === 'number' ? newReview.rating : Number(newReview.rating) || 0,
+                comment: newReview.comment || '',
+                images: Array.isArray(newReview.images) ? newReview.images : [],
+                user_name: newReview.user_name || newReview.author || '匿名',
+                user_avatar: newReview.user_avatar || newReview.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=random',
+                // ensure we don't include keys that mock doesn't expect id/created_at
+            };
         const createdReview = persistAddReview(payloadToPersist);
+        console.log('[useStoreData] addReview persisted:', createdReview);
 
         // Update local state with the newly persisted review
         setReviews((prevReviews) => [createdReview, ...prevReviews]);

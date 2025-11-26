@@ -125,10 +125,18 @@ export function getReviewsByStoreId(storeId: number): Review[] {
 export function addReview(newReview: Omit<Review, "id" | "created_at">) {
     const all = initReviews();
 
+    // Ensure required fields and defaults
     const review: Review = {
         ...newReview,
         id: all.length + 1,
         created_at: new Date().toISOString(),
+        rating: typeof newReview.rating === 'number' ? newReview.rating : 0,
+        comment: newReview.comment || '',
+        images: Array.isArray(newReview.images) ? newReview.images : [],
+        user_name: newReview.user_name || '匿名',
+        user_avatar: newReview.user_avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=random',
+        store_id: newReview.store_id,
+        user_id: newReview.user_id,
     };
 
     all.unshift(review); // hiển thị review mới ở đầu
