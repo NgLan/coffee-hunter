@@ -1,80 +1,155 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { Navigation } from 'lucide-react'; // Icon mũi tên định vị
+import { Button } from "@/components/ui/button";
 
-// --- Fix lỗi icon mặc định của Leaflet trong React ---
-import icon from 'leaflet/dist/images/marker-icon.png';
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
+// --- PHẦN ĐỊNH NGHĨA ICON ---
+// 1. Icon Quán Cafe (Thường)
+const CoffeeIcon = new L.Icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/924/924514.png',
+    iconSize: [35, 35],
+    iconAnchor: [17, 35],
+    popupAnchor: [0, -35]
 });
-L.Marker.prototype.options.icon = DefaultIcon;
-// ----------------------------------------------------
 
-// Component phụ để xử lý hiệu ứng di chuyển camera khi chọn quán
-const MapUpdater = ({ selectedStore }) => {
+// 2. Icon Quán Cafe (Đang chọn - Nổi bật)
+const SelectedIcon = new L.Icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/787/787535.png',
+    iconSize: [45, 45],
+    iconAnchor: [22, 45],
+    popupAnchor: [0, -45],
+    className: 'animate-bounce'
+});
+
+// 3. Icon Người dùng (User)
+const UserIcon = new L.Icon({
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/9131/9131546.png',
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40]
+});
+
+// --- COMPONENT PHỤ TRỢ ---
+const MapUpdater = ({ selectedStore, userLocation, focusUserTrigger }) => {
     const map = useMap();
 
+    // Effect 1: Bay tới quán khi chọn từ list
     useEffect(() => {
         if (selectedStore) {
-            // Bay tới vị trí quán được chọn với zoom level 16
-            map.flyTo(
-                [selectedStore.latitude, selectedStore.longitude],
-                16,
-                { duration: 1.5 }
-            );
+            map.flyTo([selectedStore.latitude, selectedStore.longitude], 16, { duration: 1.5 });
         }
     }, [selectedStore, map]);
+
+    // Effect 2: Bay tới vị trí người dùng khi bấm nút
+    useEffect(() => {
+        if (userLocation && focusUserTrigger > 0) {
+            map.flyTo([userLocation.lat, userLocation.lng], 15, { duration: 1.5 });
+        }
+    }, [focusUserTrigger, userLocation, map]);
 
     return null;
 };
 
+// --- COMPONENT CHÍNH ---
 const MapView = ({ stores, selectedStore, onSelectStore }) => {
-    // Tọa độ trung tâm mặc định (Hồ Hoàn Kiếm)
+    // Tọa độ mặc định (Hồ Hoàn Kiếm)
     const defaultCenter = [21.0285, 105.8542];
 
+    // State vị trí người dùng
+    const [userLocation, setUserLocation] = useState(null);
+    // State trigger để kích hoạt việc zoom vào user
+    const [focusUserTrigger, setFocusUserTrigger] = useState(0);
+
+    // Hàm lấy vị trí thật
+    const handleGetLocation = () => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    // Thành công: Lấy toạ độ thật
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    });
+                    setFocusUserTrigger(prev => prev + 1); // Kích hoạt zoom
+                },
+                (error) => {
+                    console.error("Lỗi lấy vị trí:", error);
+                    // Fallback: Nếu lỗi (hoặc user từ chối), giả vờ đang ở Nhà Hát Lớn Hà Nội để demo cho đẹp
+                    alert("Không lấy được vị trí thật. Đang dùng vị trí demo (Hà Nội).");
+                    setUserLocation({ lat: 21.0250, lng: 105.8560 });
+                    setFocusUserTrigger(prev => prev + 1);
+                }
+            );
+        } else {
+            alert("Trình duyệt không hỗ trợ định vị!");
+        }
+    };
+
+    // Tự động lấy vị trí khi vào app lần đầu (Optional)
+    useEffect(() => {
+        handleGetLocation();
+    }, []);
+
     return (
-        <MapContainer
-            center={defaultCenter}
-            zoom={13}
-            style={{ height: "100%", width: "100%" }}
-            className="z-0" // Đảm bảo map nằm dưới các thành phần UI khác
-        >
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
+        <div className="relative h-full w-full">
+            <MapContainer
+                center={defaultCenter}
+                zoom={13}
+                style={{ height: "100%", width: "100%" }}
+                className="z-0"
+            >
+                <TileLayer
+                    attribution='&copy; OpenStreetMap contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                />
 
-            {/* Component xử lý logic zoom/pan */}
-            <MapUpdater selectedStore={selectedStore} />
+                <MapUpdater
+                    selectedStore={selectedStore}
+                    userLocation={userLocation}
+                    focusUserTrigger={focusUserTrigger}
+                />
 
-            {/* Render các Marker từ danh sách stores */}
-            {stores.map((store) => (
-                <Marker
-                    key={store.id}
-                    position={[store.latitude, store.longitude]}
-                    eventHandlers={{
-                        click: () => onSelectStore(store), // Bắt sự kiện click vào marker
-                    }}
+                {/* Marker Người dùng */}
+                {userLocation && (
+                    <Marker position={[userLocation.lat, userLocation.lng]} icon={UserIcon}>
+                        <Popup>Bạn đang ở đây (Near by you)</Popup>
+                    </Marker>
+                )}
+
+                {/* Marker Các quán Cafe */}
+                {stores.map((store) => (
+                    <Marker
+                        key={store.id}
+                        position={[store.latitude, store.longitude]}
+                        icon={selectedStore?.id === store.id ? SelectedIcon : CoffeeIcon}
+                        eventHandlers={{
+                            click: () => onSelectStore(store),
+                        }}
+                    >
+                        <Popup>
+                            <div className="p-1">
+                                <h3 className="font-bold text-sm">{store.name_jp}</h3>
+                                <p className="text-xs text-gray-600">⭐ {store.avg_rating}</p>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+            </MapContainer>
+
+            {/* NÚT VỊ TRÍ CỦA TÔI (Góc dưới phải) */}
+            <div className="absolute bottom-6 right-6 z-[400]">
+                <Button
+                    size="icon"
+                    className="rounded-full shadow-xl bg-white text-primary hover:bg-gray-100 h-12 w-12"
+                    onClick={handleGetLocation}
+                    title="Vị trí của tôi"
                 >
-                    <Popup>
-                        <div className="p-1">
-                            <h3 className="font-bold text-sm">{store.name_jp}</h3>
-                            <p className="text-xs text-gray-600">{store.address_jp}</p>
-                            <p className="text-xs text-yellow-600 font-semibold mt-1">
-                                ★ {store.avg_rating}
-                            </p>
-                        </div>
-                    </Popup>
-                </Marker>
-            ))}
-        </MapContainer>
+                    <Navigation className="h-6 w-6 fill-current" />
+                </Button>
+            </div>
+        </div>
     );
 };
 
