@@ -16,24 +16,58 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStoreData } from "@/hooks/useStoreData";
+import { LoginPrompt } from "@/components/features/LoginPrompt";
 import { useAuth } from "@/contexts/AuthContext";
 import ReviewSection from "@/components/features/ReviewSection";
+import { ReviewForm } from "@/components/features/ReviewForm";
 
 /**
+import { ReviewForm } from "@/components/features/ReviewForm";
  * Store Detail Page - Màn hình chi tiết quán (画面No.7)
  * Hiển thị: Images, Info, Services, Menu, Reviews
  */
 const StoreDetailPage = () => {
     const { id } = useParams();
-    const { isAuthenticated, currentUser } = useAuth();
-    const { getStoreById, getReviewsByStoreId, isFavorite, toggleFavorite } =
+    const auth = useAuth();
+    const { isAuthenticated, currentUser } = auth;
+    const { getStoreById, getReviewsByStoreId, isFavorite, toggleFavorite, addReview } =
         useStoreData();
-
     const store = getStoreById(id);
     const reviews = getReviewsByStoreId(parseInt(id));
     const isLiked = isFavorite(parseInt(id));
 
     const [selectedImage, setSelectedImage] = useState(0);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+    const openReview = () => {
+        if (!isAuthenticated) {
+            setShowLoginPrompt(true);
+            return;
+        }
+        setShowReviewModal(true);
+    };
+    const closeReview = () => setShowReviewModal(false);
+
+    const handleSubmitReview = (payload) => {
+        if (typeof addReview === "function") {
+            const created_at = payload.createdAt || new Date().toISOString();
+            const user_id = currentUser?.id || null;
+            const user_name = currentUser?.name || currentUser?.username || payload.author || "匿名";
+            const user_avatar = currentUser?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=random";
+
+            const payloadForHook = {
+                ...payload,
+                created_at,
+                user_id,
+                user_name,
+                user_avatar,
+            };
+
+            addReview(store.id, payloadForHook);
+        }
+        closeReview();
+    };
 
     if (!store) {
         return (

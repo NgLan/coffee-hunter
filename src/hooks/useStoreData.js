@@ -8,8 +8,8 @@ import { MOCK_FAVORITES } from "@/mocks/data/users";
  * Bao gồm filter, sort và các thao tác liên quan
  */
 export const useStoreData = () => {
-    const [stores] = useState(MOCK_STORES);
-    const [reviews] = useState(MOCK_REVIEWS);
+    const [stores, setStores] = useState(MOCK_STORES);
+    const [reviews, setReviews] = useState(MOCK_REVIEWS);
     const [favorites, setFavorites] = useState(MOCK_FAVORITES);
 
     // Lấy reviews theo store ID
@@ -71,7 +71,6 @@ export const useStoreData = () => {
     // Search stores theo tên hoặc địa chỉ
     const searchStores = (query) => {
         if (!query) return stores;
-
         const lowercaseQuery = query.toLowerCase();
         return stores.filter(
             (store) =>
@@ -83,7 +82,39 @@ export const useStoreData = () => {
 
     // Lấy store theo ID
     const getStoreById = (storeId) => {
-        return stores.find((store) => store.id === parseInt(storeId));
+        return stores.find((store) => store.id === parseInt(storeId, 10));
+    };
+
+    // Thêm review mới vào danh sách và cập nhật store stats (avg_rating, review_count)
+    const addReview = (storeId, newReview) => {
+        setReviews((prevReviews) => {
+            const nextId = prevReviews.length > 0 ? prevReviews[prevReviews.length - 1].id + 1 : 1;
+            const reviewObj = {
+                id: nextId,
+                store_id: storeId,
+                ...newReview,
+            };
+
+            // Cập nhật stores
+            setStores((prevStores) =>
+                prevStores.map((s) => {
+                    if (s.id === storeId) {
+                        const oldCount = s.review_count ?? 0;
+                        const oldAvg = s.avg_rating ?? 0;
+                        const newCount = oldCount + 1;
+                        const newAvg = (oldAvg * oldCount + newReview.rating) / newCount;
+                        return {
+                            ...s,
+                            review_count: newCount,
+                            avg_rating: parseFloat(newAvg.toFixed(1)),
+                        };
+                    }
+                    return s;
+                })
+            );
+
+            return [...prevReviews, reviewObj];
+        });
     };
 
     return {
@@ -98,5 +129,6 @@ export const useStoreData = () => {
         sortStores,
         searchStores,
         getStoreById,
+        addReview,
     };
 };

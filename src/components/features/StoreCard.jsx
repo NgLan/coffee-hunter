@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { MapPin, Star, Heart, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStoreData } from "@/hooks/useStoreData";
+import { ReviewForm } from "@/components/features/ReviewForm";
+import { LoginPrompt } from "@/components/features/LoginPrompt";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Store Card Component - Hiển thị thông tin quán cà phê dạng card
@@ -12,8 +15,53 @@ import { useStoreData } from "@/hooks/useStoreData";
  * @param {boolean} compact - Hiển thị dạng compact (cho map sidebar)
  */
 const StoreCard = ({ store, compact = false }) => {
-    const { isFavorite, toggleFavorite } = useStoreData();
+    const { isFavorite, toggleFavorite, addReview } = useStoreData();
+    const auth = useAuth();
+    const { currentUser, isAuthenticated } = auth;
     const isLiked = isFavorite(store.id);
+    const [showReviewModal, setShowReviewModal] = useState(false);
+    const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+    const openReview = (e) => {
+        // prevent triggering parent link if inside
+        e?.preventDefault?.();
+
+        if (!isAuthenticated) {
+            setShowLoginPrompt(true);
+            return;
+        }
+
+        setShowReviewModal(true);
+    };
+    const openLoginFromPrompt = () => {
+        setShowLoginPrompt(false);
+        auth?.openLoginModal?.();
+    };
+    const openRegisterFromPrompt = () => {
+        setShowLoginPrompt(false);
+        auth?.openRegisterModal?.();
+    };
+    const closeReview = () => setShowReviewModal(false);
+
+    const handleSubmitReview = (payload) => {
+        if (typeof addReview === "function") {
+            const created_at = payload.createdAt || new Date().toISOString();
+            const user_id = currentUser?.id || null;
+            const user_name = currentUser?.name || currentUser?.username || payload.author || "匿名";
+            const user_avatar = currentUser?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=random";
+
+            const payloadForHook = {
+                ...payload,
+                created_at,
+                user_id,
+                user_name,
+                user_avatar,
+            };
+
+            addReview(store.id, payloadForHook);
+        }
+        closeReview();
+    };
 
     if (compact) {
         return (
@@ -46,6 +94,16 @@ const StoreCard = ({ store, compact = false }) => {
                                 <ArrowRight className="h-4 w-4" />
                             </Button>
                         </Link>
+                        {/* Add a small review button in compact mode */}
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={(e) => openReview(e)}
+                            aria-label="レビューを書く"
+                        >
+                            ✎
+                        </Button>
                     </div>
                 </CardContent>
             </Card>
@@ -89,7 +147,7 @@ const StoreCard = ({ store, compact = false }) => {
                 </Badge>
             </div>
 
-            <CardContent className="p-4">
+                <CardContent className="p-4">
                 {/* Store Name */}
                 <Link to={`/store/${store.id}`}>
                     <h3 className="mb-2 text-lg font-semibold line-clamp-1 hover:text-primary">
@@ -123,13 +181,34 @@ const StoreCard = ({ store, compact = false }) => {
                 </p>
 
                 {/* View Details Button */}
-                <Link to={`/store/${store.id}`}>
-                    <Button variant="outline" className="w-full">
-                        詳細を見る
-                        <ArrowRight className="ml-2 h-4 w-4" />
+                <div className="flex gap-2">
+                    <Link to={`/store/${store.id}`} className="flex-1">
+                        <Button variant="outline" className="w-full">
+                            詳細を見る
+                            <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </Link>
+
+                    <Button onClick={openReview} className="w-36">
+                        レビューを書く
                     </Button>
-                </Link>
+                </div>
             </CardContent>
+
+            {showReviewModal && (
+                <ReviewForm
+                    onClose={closeReview}
+                    onSubmit={handleSubmitReview}
+                    authorName={currentUser?.name || currentUser?.username}
+                />
+            )}
+            {showLoginPrompt && (
+                <LoginPrompt
+                    onClose={() => setShowLoginPrompt(false)}
+                    onLogin={openLoginFromPrompt}
+                    onRegister={openRegisterFromPrompt}
+                />
+            )}
         </Card>
     );
 };
