@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import {
   MapPin,
@@ -14,6 +15,7 @@ import {
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +25,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import ReviewSection from "@/components/features/ReviewSection";
 
 /**
+import { ReviewForm } from "@/components/features/ReviewForm";
  * Store Detail Page - Màn hình chi tiết quán (画面No.7)
  * Hiển thị: Images, Info, Services, Menu, Reviews
  */
@@ -66,7 +69,18 @@ const StoreDetailPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
 
+      <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-8xl">
+        {/* Back Button */}
+        <Link to="/">
+          <Button variant="ghost" className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            戻る
+          </Button>
+        </Link>
       <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-8xl">
         {/* Back Button */}
         <Link to="/">
