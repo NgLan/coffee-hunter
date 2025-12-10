@@ -11,6 +11,7 @@ import StoreDetailPage from "./pages/StoreDetailPage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
+import UserFavoritePage from "./pages/UserFavoritePage";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ const App = () => (
                         <Route path="/store/:id" element={<StoreDetailPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        <Route path="/favorites" element={<UserFavoritePage />} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>
