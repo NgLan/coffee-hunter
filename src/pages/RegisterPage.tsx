@@ -124,6 +124,7 @@ const RegisterPage: React.FC = () => {
         const result = signup({
             name: formData.username,
             email: formData.email,
+            password: formData.password,
             birthday,
             gender: formData.gender as 'male' | 'female' | 'other'
         });
@@ -138,6 +139,9 @@ const RegisterPage: React.FC = () => {
             setTimeout(() => {
                 navigate('/login');
             }, 1500);
+        } else {
+            // Show error if registration fails
+            setErrors({ email: result.error || '登録に失敗しました' });
         }
     };
 

@@ -1,13 +1,34 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { MOCK_USERS } from "@/mocks/data/users";
+
+// Load users from localStorage if available
+const loadUsers = () => {
+    const savedUsers = localStorage.getItem('mockUsers');
+    if (savedUsers) {
+        try {
+            const parsedUsers = JSON.parse(savedUsers);
+            // Merge with MOCK_USERS, keeping saved users
+            MOCK_USERS.length = 0;
+            MOCK_USERS.push(...parsedUsers);
+        } catch (e) {
+            console.error('Error loading users from localStorage', e);
+        }
+    }
+};
 
 // Context cho Authentication
 const AuthContext = createContext();
 
 // Provider component
 export const AuthProvider = ({ children }) => {
+    // Load users on mount
+    useEffect(() => {
+        loadUsers();
+    }, []);
+
     // Mock: User đã login (có thể để null nếu muốn test chưa login)
     const [currentUser, setCurrentUser] = useState(() => {
+        loadUsers();
         const savedEmail = localStorage.getItem('userEmail');
         // Nếu có email trong storage, tìm user tương ứng trong MOCK_USERS
         if (savedEmail) {
@@ -27,6 +48,7 @@ export const AuthProvider = ({ children }) => {
     // Hàm login (mock)
     const login = (email, password) => {
         console.log('Attempting login with', email, password);
+        loadUsers(); // Reload users before login
         const user = MOCK_USERS.find((u) => u.email === email);
         if (!user) {
             return { success: false, error: "アカウントが見つかりません" };
@@ -53,13 +75,28 @@ export const AuthProvider = ({ children }) => {
 
     // Hàm signup (mock)
     const signup = (userData) => {
+        // Check if email already exists
+        const existingUser = MOCK_USERS.find(u => u.email === userData.email);
+        if (existingUser) {
+            return { success: false, error: "このメールアドレスは既に登録されています" };
+        }
+
         const newUser = {
             id: MOCK_USERS.length + 1,
+            avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email}`,
             ...userData,
         };
         MOCK_USERS.push(newUser);
+        
+        // Save to localStorage for persistence
+        localStorage.setItem('mockUsers', JSON.stringify(MOCK_USERS));
+        
         setCurrentUser(newUser);
         setIsAuthenticated(true);
+        
+        localStorage.setItem('isLoggedIn', 'true');
+        localStorage.setItem('userEmail', userData.email);
+        
         return { success: true };
     };
 
