@@ -3,6 +3,7 @@ import { SlidersHorizontal, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
     Sheet,
     SheetContent,
@@ -135,16 +136,18 @@ const FilterPanel = ({
         <>
             {/* Desktop Version */}
             <div className="hidden lg:block sticky top-20">
-                <div className="flex flex-col rounded-lg border bg-card max-h-[calc(100vh-6rem)]">
-                    <div className="flex-shrink-0 p-6 pb-2">
+                <div className="flex flex-col rounded-lg border bg-card h-[calc(100vh-6rem)]">
+                    <div className="flex-shrink-0 p-6 pb-4 border-b">
                         <div className="flex items-center gap-2">
                             <SlidersHorizontal className="h-5 w-5" />
                             <h2 className="text-lg font-semibold">フィルター</h2>
                         </div>
                     </div>
-                    <div className="overflow-y-auto p-6 pt-2">
-                        <FilterContent />
-                    </div>
+                    <ScrollArea className="flex-1 w-full" type="hover">
+                        <div className="p-6 pt-4">
+                            <FilterContent />
+                        </div>
+                    </ScrollArea>
                 </div>
             </div>
 
