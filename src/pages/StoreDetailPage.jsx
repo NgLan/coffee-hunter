@@ -36,96 +36,196 @@ const StoreDetailPage = () => {
   };
 
   const [selectedImage, setSelectedImage] = useState(0);
-  const [reviewRating, setReviewRating] = useState(5);
-  const [reviewComment, setReviewComment] = useState("");
+  
+  const isLiked = id ? isFavorite(parseInt(id)) : false;
 
-    if (!store) {
-        return (
-            <div className="min-h-screen bg-background">
-                <Header />
+  // Menu Paging với kiểm tra an toàn
+  const itemsPerPage = 6;
+  const menuItems = store?.menu || [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(menuItems.length / itemsPerPage));
 
-                <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-8xl">
-                    {/* Back Button */}
-                    <Link to="/">
-                        <Button variant="ghost" className="mb-6">
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            戻る
-                        </Button>
-                    </Link>
+  const currentItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return menuItems.slice(start, start + itemsPerPage);
+  }, [menuItems, currentPage]);
 
-        {/* Top Section - Image Gallery + Store Info Card */}
-        <div className="mb-8 grid gap-6 lg:grid-cols-3">
-          {/* Left - Image Gallery */}
-          {/* Left - Image Gallery */}
+  // ===== Xử lý khi store không tồn tại =====
+  if (!store) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex items-center gap-4">
+            <Link to="/">
+              <Button variant="ghost">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                戻る
+              </Button>
+            </Link>
+            <div>
+              <h3 className="text-lg font-semibold">店舗が見つかりません</h3>
+              <p className="text-muted-foreground">該当する店舗は存在しません。</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // ===== Xử lý images an toàn (không mutate) =====
+  const images = store.images && store.images.length > 0 
+    ? store.images 
+    : ['/placeholder-image.jpg'];
+
+  // Reset selectedImage nếu vượt quá số lượng images
+  if (selectedImage >= images.length) {
+    setSelectedImage(0);
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="container mx-auto px-4 py-8 max-w-8xl">
+        <Link to="/">
+          <Button variant="ghost" className="mb-6">
+            <ArrowLeft className="mr-2 h-4 w-4" /> 戻る
+          </Button>
+        </Link>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* ------------------------------------------------ Left Column ------------------------------------------------ */}
           <div className="lg:col-span-2">
-            {/* Main Image */}
+            {/* ---- Image ---- */}
             <div className="relative mb-4 overflow-hidden rounded-lg">
               <img
-                src={store.images[selectedImage]}
-                alt={store.name_jp}
+                src={images[selectedImage]}
+                alt={store.name_jp || "Store image"}
                 className="aspect-video w-full object-cover"
               />
 
               <div className="absolute bottom-2 right-2 rounded-md bg-black/60 px-3 py-1 text-sm text-white">
-                {selectedImage + 1} / {store.images.length}
+                {selectedImage + 1} / {images.length}
               </div>
             </div>
 
-            {/* Pagination - Centered */}
-            <div className="flex items-center justify-center gap-2 mt-4">
-              {/* Prev */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setSelectedImage(0)
-                }
-              >
-                &lt;&lt;
-              </Button>
-
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                        setSelectedImage((prev) =>
-                                            prev > 0 ? prev - 1 : store.images.length - 1
-                                        )
-                                    }
-                                >
-                                    &lt;
-                                </Button>
+            {/* ---- Image Pagination ---- */}
+            {images.length > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-4">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSelectedImage(0)}
+                  disabled={selectedImage === 0}
+                >
+                  &lt;&lt;
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setSelectedImage(prev => prev > 0 ? prev - 1 : images.length - 1)
+                  }
+                >
+                  &lt;
+                </Button>
 
                 <div className="text-md font-medium text-gray-700 px-4">
                   {selectedImage + 1}
                 </div>
 
-              {/* Next */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setSelectedImage((prev) =>
-                    prev < store.images.length - 1 ? prev + 1 : 0
-                  )
-                }
-              >
-                &gt;
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setSelectedImage(store.images.length - 1)
-                }
-              >
-                &gt;&gt;
-              </Button>
-            </div>
-          </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setSelectedImage(prev => prev < images.length - 1 ? prev + 1 : 0)
+                  }
+                >
+                  &gt;
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setSelectedImage(images.length - 1)}
+                  disabled={selectedImage === images.length - 1}
+                >
+                  &gt;&gt;
+                </Button>
+              </div>
+            )}
 
+            {/* ------------------------------------------------ Description ------------------------------------------------ */}
+            <Card className="mb-8 mt-6">
+              <CardContent className="p-6">
+                <h3 className="mb-3 text-lg font-semibold">説明</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {store.description_jp || "説明はありません"}
+                </p>
+              </CardContent>
+            </Card>
 
+            {/* ------------------------------------------------ Menu ------------------------------------------------ */}
+            {menuItems.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h3 className="mb-4 text-lg font-semibold">メニュー</h3>
+
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {currentItems.map(item => (
+                      <div key={item.id} className="flex gap-4 rounded-lg border p-4">
+                        <img
+                          src={item.image_url}
+                          alt={item.name_jp}
+                          className="h-20 w-20 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{item.name_jp}</h4>
+                          <p className="text-sm text-muted-foreground">{item.description_jp}</p>
+                          <p className="mt-2 font-semibold text-primary">
+                            {item.price.toLocaleString()}đ
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                      >
+                        &lt;
+                      </Button>
+
+                      <span className="text-sm font-medium">
+                        {currentPage} / {totalPages}
+                      </span>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                      >
+                        &gt;
+                      </Button>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* ------------------------------------------------ Review Form ------------------------------------------------ */}
+            <ReviewTrigger storeId={store.id} onNewReview={handleNewReview} />
+
+            {/* Reviews */}
+            <ReviewSection reviews={reviews} />
+          </div>
 
           {/* ------------------------------------------------ Right Column ------------------------------------------------ */}
           <div className="lg:col-span-1">
@@ -195,109 +295,6 @@ const StoreDetailPage = () => {
             </Card>
           </div>
         </div>
-
-        {/* Description Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h3 className="mb-3 text-lg font-semibold">説明</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              {store.description_jp}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Menu Section */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <h3 className="mb-4 text-lg font-semibold">メニュー</h3>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {store.menu.map((item) => (
-                <div key={item.id} className="flex gap-4 rounded-lg border p-4">
-                  <img
-                    src={item.image_url}
-                    alt={item.name_jp}
-                    className="h-20 w-20 rounded-lg object-cover"
-                  />
-                  <div className="flex-1">
-                    <h4 className="font-semibold">{item.name_jp}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {item.description_jp}
-                    </p>
-                    <p className="mt-2 font-semibold text-primary">
-                      {item.price.toLocaleString()}đ
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Post review section */}
-        {isAuthenticated && (
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h3 className="mb-4 text-xl font-semibold">レビューを投稿する</h3>
-
-              {/* 星評価 + 画像/動画アイコン */}
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex gap-1">
-                  {[...Array(5)].map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setReviewRating(i + 1)}
-                      className="transition-transform hover:scale-110"
-                    >
-                      <Star
-                        className={`h-8 w-8 ${
-                          i < reviewRating
-                            ? "fill-yellow-400 text-yellow-400"
-                            : "text-gray-300"
-                        }`}
-                      />
-                    </button>
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
-                    <Camera className="h-5 w-5" />
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <Video className="h-5 w-5" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* コメント入力 */}
-              <Textarea
-                placeholder="コメント"
-                value={reviewComment}
-                onChange={(e) => setReviewComment(e.target.value)}
-                className="mb-4 text-xl font-semibold"
-              />
-
-              {/* 写真アップロードボックス */}
-              <div className="mb-4">
-                <p className="mb-2 text-sm font-medium">写真を追加</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[...Array(3)].map((_, i) => (
-                    <button
-                      key={i}
-                      className="flex aspect-square items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 transition-colors hover:border-gray-400 hover:bg-gray-100"
-                    >
-                      <Plus className="h-8 w-8 text-gray-400" />
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Button className="w-full">レビューを投稿</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Reviews Section */}
-        <ReviewSection reviews={reviews} />
       </main>
     </div>
   );
