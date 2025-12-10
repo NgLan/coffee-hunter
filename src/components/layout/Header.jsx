@@ -165,7 +165,7 @@ const Header = () => {
                                         <DropdownMenuItem onClick={() => navigate("/login")}>
                                             ログイン
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => navigate("/signup")}>
+                                        <DropdownMenuItem onClick={() => navigate("/register")}>
                                             新規登録
                                         </DropdownMenuItem>
                                     </>

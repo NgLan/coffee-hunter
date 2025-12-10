@@ -8,6 +8,8 @@ import HomePage from "./pages/HomePage";
 import SearchResultPage from "./pages/SearchResultPage";
 import MapPage from "./pages/MapPage";
 import StoreDetailPage from "./pages/StoreDetailPage";
+import RegisterPage from "./pages/RegisterPage";
+import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +26,8 @@ const App = () => (
                         <Route path="/search" element={<SearchResultPage />} />
                         <Route path="/map" element={<MapPage />} />
                         <Route path="/store/:id" element={<StoreDetailPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/login" element={<LoginPage />} />
                         {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>
