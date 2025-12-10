@@ -1,12 +1,12 @@
-import React, { useState, useMemo, useEffect} from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { MapPin, ArrowRight, Map, Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
-import StoreCard from "@/components/features/StoreCard";
 import { useStoreData } from "@/hooks/useStoreData";
 import { MOCK_FAVORITES } from "@/mocks/data/users";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Hot Pickロジック：レーティング、レビュー数、重み付きランダムで最大5件
@@ -19,7 +19,7 @@ const getHotPickStores = (stores) => {
         const reviewScore = Math.min(store.review_count / 10, 50); // 最大50点
         const randomBoost = Math.random() * 30; // 最大30点のランダム
         const totalScore = ratingScore + reviewScore + randomBoost;
-        
+
         return {
             ...store,
             hotPickScore: totalScore
@@ -42,66 +42,56 @@ const getHotPickStores = (stores) => {
  * 
  * If not logged in: Only public scoring (distance + rating + reviews)
  */
-const getNearByStores = (stores, isLoggedIn, currentUserId = null) => {
-    // Get user's favorites if logged in
-    const userFavoriteIds = isLoggedIn && currentUserId 
-        ? MOCK_FAVORITES
-            .filter(fav => fav.user_id === currentUserId)
-            .map(fav => fav.store_id)
+const getNearByStores = (stores, isAuthenticated, currentUser = null) => {
+    const userFavoriteIds = isAuthenticated && currentUser
+        ? MOCK_FAVORITES.filter((fav) => fav.user_id === currentUser.id).map(
+            (fav) => fav.store_id)
         : [];
 
-    const storesWithScore = stores.map(store => {
-        let score = 0;
-        
-        // 1. Distance score (closer = higher score)
-        // Max 100 points for 0km, decreases by 10 per km
-        const distanceScore = Math.max(0, 100 - (store.distance * 10));
-        score += distanceScore;
-        
-        // 2. Favorite bonus (only when logged in)
-        // Favorites get massive priority: +150 points
-        if (isLoggedIn && userFavoriteIds.includes(store.id)) {
-            score += 150;
-        }
-        
-        // 3. Rating score (max 50 points for 5.0 rating)
-        score += store.avg_rating * 10;
-        
-        // 4. Review count score (max 20 points)
-        score += Math.min(store.review_count / 5, 20);
-        
-        return {
-            ...store,
-            nearByScore: score,
-            isFavorite: isLoggedIn && userFavoriteIds.includes(store.id)
-        };
-    });
+    return stores
+        .map(store => {
+            let score = 0;
 
-    // Sort by score and return top 5
-    return storesWithScore
+            // Distance
+            const distanceScore = Math.max(0, 100 - store.distance * 10);
+            score += distanceScore;
+
+            // Favorite bonus only when logged in
+            if (isAuthenticated && userFavoriteIds.includes(store.id)) {
+                score += 150;
+            }
+
+            // Rating & review
+            score += store.avg_rating * 10;
+            score += Math.min(store.review_count / 5, 20);
+
+            return {
+                ...store,
+                nearByScore: score,
+                isFavorite: isAuthenticated ? userFavoriteIds.includes(store.id) : false
+            };
+        })
         .sort((a, b) => b.nearByScore - a.nearByScore)
         .slice(0, 5);
 };
-
 /**
  * Home Page - ホーム画面
  * Hot Pick + Near by you + All list を表示
  */
 const HomePage = () => {
     const { stores } = useStoreData();
+    const { currentUser, isAuthenticated } = useAuth();
     const [currentHotPick, setCurrentHotPick] = useState(0);
-    
+
     // ログイン状態を仮定（実際のアプリではuseAuthなどから取得）
     // 本番では useAuth() hook などから取得
-    const isLoggedIn = true; // Mock: ログイン中と仮定
-    const currentUserId = 1; // Mock: User ID 1
 
     // Hot Pick計算（メモ化）
     const hotPickStores = useMemo(() => getHotPickStores(stores), [stores]);
 
     //  Auto slide every 3s
     useEffect(() => {
-        if (!hotPickStores || hotPickStores.length === 0) return;
+        if (!hotPickStores.length) return;
 
         const interval = setInterval(() => {
             setCurrentHotPick((prev) => (prev + 1) % hotPickStores.length);
@@ -111,16 +101,16 @@ const HomePage = () => {
     }, [hotPickStores]);
 
     // Near By You計算（メモ化）
-    // Pass currentUserId so we can filter favorites properly
-    const nearbyStores = useMemo(() => 
-        getNearByStores(stores, isLoggedIn, currentUserId), 
-        [stores, isLoggedIn, currentUserId]
+    // Pass currentUser so we can filter favorites properly
+    const nearbyStores = useMemo(() =>
+        getNearByStores(stores, isAuthenticated, currentUser),
+        [stores, isAuthenticated, currentUser]
     );
 
     // Get user favorites for "All List" section
-    const userFavoriteIds = isLoggedIn && currentUserId 
+    const userFavoriteIds = isAuthenticated && currentUser
         ? MOCK_FAVORITES
-            .filter(fav => fav.user_id === currentUserId)
+            .filter(fav => fav.user_id === currentUser)
             .map(fav => fav.store_id)
         : [];
 
@@ -133,6 +123,13 @@ const HomePage = () => {
         setCurrentHotPick((prev) =>
             prev === 0 ? hotPickStores.length - 1 : prev - 1
         );
+    };
+
+    const serviceIcons = {
+        "無料Wi-Fi": "📶",
+        "エアコン完備": "❄️",
+        "屋外席": "🌿",
+        "駐車場あり": "🅿️",
     };
 
     return (
@@ -176,9 +173,8 @@ const HomePage = () => {
                                     {hotPickStores[currentHotPick].images.slice(0, 3).map((img, idx) => (
                                         <div
                                             key={idx}
-                                            className={`overflow-hidden rounded-lg ${
-                                                idx === 0 ? "col-span-2 aspect-video" : "aspect-square"
-                                            }`}
+                                            className={`overflow-hidden rounded-lg ${idx === 0 ? "col-span-2 aspect-video" : "aspect-square"
+                                                }`}
                                         >
                                             <img
                                                 src={img}
@@ -238,29 +234,27 @@ const HomePage = () => {
                             <button
                                 key={idx}
                                 onClick={() => setCurrentHotPick(idx)}
-                                className={`h-2 rounded-full transition-all ${
-                                    idx === currentHotPick 
-                                        ? "w-8 bg-amber-600" 
-                                        : "w-2 bg-gray-300 hover:bg-gray-400"
-                                }`}
+                                className={`h-2 rounded-full transition-all ${idx === currentHotPick
+                                    ? "w-8 bg-amber-600"
+                                    : "w-2 bg-gray-300 hover:bg-gray-400"
+                                    }`}
                                 aria-label={`スライド ${idx + 1} へ移動`}
                             />
                         ))}
                     </div>
                 </section>
 
-                {/* Near by you Section */}
+                {/* --- Near By You Section --- */}
                 <section className="mb-12">
                     <div className="mb-6 flex items-center justify-between">
                         <div>
-                            <h2 className="text-2xl font-bold text-coffee-dark">
-                                近くのカフェ
-                            </h2>
-                            {isLoggedIn && nearbyStores.some(s => s.isFavorite) && (
-                                <p className="text-sm text-muted-foreground mt-1">
-                                    お気に入りを優先表示しています
-                                </p>
-                            )}
+                            <h2 className="text-2xl font-bold text-coffee-dark">近くのカフェ</h2>
+                            {isAuthenticated &&
+                                nearbyStores.some((s) => s.isFavorite) && (
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                        お気に入りを優先表示しています
+                                    </p>
+                                )}
                         </div>
                         <Link to="/map">
                             <Button variant="outline" className="gap-2">
@@ -272,42 +266,37 @@ const HomePage = () => {
 
                     <div className="grid gap-4 sm:grid-cols-2">
                         {nearbyStores.map((store) => (
-                            <Link 
-                                key={store.id} 
-                                to={`/store/${store.id}`}
-                                className="block"
-                            >
+                            <Link key={store.id} to={`/store/${store.id}`} className="block">
                                 <Card className="overflow-hidden hover:shadow-lg transition-shadow">
                                     <div className="flex gap-4 p-4">
-                                        {/* Image */}
-                                        <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                                            <img
-                                                src={store.images[0]}
-                                                alt={store.name_jp}
-                                                className="w-full h-full object-cover"
-                                            />
+                                        <div className="w-24 h-24 rounded-lg overflow-hidden">
+                                            <img src={store.images[0]} alt={store.name_jp} className="w-full h-full object-cover" />
                                         </div>
-                                        
-                                        {/* Content */}
+
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-2">
                                                 <h3 className="font-bold text-lg mb-2 truncate">
                                                     {store.name_jp}
                                                 </h3>
-                                                {store.isFavorite ? (
-                                                    <Heart className="h-5 w-5 flex-shrink-0 fill-red-500 text-red-500" />
-                                                ) : (
-                                                    <Heart className="h-5 w-5 flex-shrink-0 text-gray-400" />
-                                                )}
+
+                                                {/* 🔥 FIX: Chỉ hiện trái tim khi đã login */}
+                                                {isAuthenticated &&
+                                                    (store.isFavorite ? (
+                                                        <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                                                    ) : (
+                                                        <Heart className="h-5 w-5 text-gray-400" />
+                                                    ))}
                                             </div>
+
                                             <div className="flex items-center gap-1 mb-2">
                                                 <span className="text-amber-600 font-bold">
                                                     ★ {store.avg_rating}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                <MapPin className="h-4 w-4 flex-shrink-0" />
-                                                <span className="truncate">{store.distance}km</span>
+                                                <MapPin className="h-4 w-4" />
+                                                <span>{store.distance}km</span>
                                             </div>
                                         </div>
                                     </div>
@@ -333,8 +322,8 @@ const HomePage = () => {
 
                     <div className="space-y-4">
                         {stores.slice(0, 8).map((store) => (
-                            <Link 
-                                key={store.id} 
+                            <Link
+                                key={store.id}
                                 to={`/store/${store.id}`}
                                 className="block"
                             >
@@ -348,7 +337,7 @@ const HomePage = () => {
                                                 className="w-full h-full object-cover"
                                             />
                                         </div>
-                                        
+
                                         {/* Content */}
                                         <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                                             <div>
@@ -369,11 +358,17 @@ const HomePage = () => {
                                                                 {store.opening_hours_jp}
                                                             </span>
                                                         </div>
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-muted-foreground">☕</span>
-                                                            <span className="text-muted-foreground">
-                                                                カフェ
-                                                            </span>
+                                                        <div className="flex items-center gap-4 text-sm">
+                                                            {store.services.slice(0, 2).map((service, i) => (
+                                                                <div key={i} className="flex items-center gap-1">
+                                                                    <span className="text-muted-foreground">
+                                                                        {serviceIcons[service] || "☕"}
+                                                                    </span>
+                                                                    <span className="text-muted-foreground truncate">
+                                                                        {service}
+                                                                    </span>
+                                                                </div>
+                                                            ))}
                                                         </div>
                                                     </div>
                                                 </div>
