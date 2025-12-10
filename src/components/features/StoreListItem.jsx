@@ -12,8 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
  */
 const StoreListItem = ({ store }) => {
     return (
-        <Link to={`/store/${store.id}`}>
-            <Card className="group overflow-hidden transition-all hover:shadow-md">
+        <Link to={`/store/${store.id}`} className="block">
+            <Card className="group overflow-hidden transition-all hover:shadow-lg">
                 <CardContent className="p-0">
                     <div className="flex gap-0">
                         {/* Image - Left Side (Square) */}
