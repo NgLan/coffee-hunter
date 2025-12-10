@@ -1,19 +1,7 @@
-import { useState } from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
-import {
-    MapPin,
-    Clock,
-    Phone,
-    Star,
-    Heart,
-    ArrowLeft,
-    Camera,
-    Video,
-    Plus,
-} from "lucide-react";
+import { MapPin, Clock, Phone, ArrowLeft } from "lucide-react";
 import Header from "@/components/layout/Header";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -21,21 +9,31 @@ import { Separator } from "@/components/ui/separator";
 import { useStoreData } from "@/hooks/useStoreData";
 import { useAuth } from "@/contexts/AuthContext";
 import ReviewSection from "@/components/features/ReviewSection";
+import { ReviewTrigger } from "@/components/features/ReviewTrigger";
 
-/**
-import { ReviewForm } from "@/components/features/ReviewForm";
- * Store Detail Page - Màn hình chi tiết quán (画面No.7)
- * Hiển thị: Images, Info, Services, Menu, Reviews
- */
 const StoreDetailPage = () => {
   const { id } = useParams();
-  const { isAuthenticated } = useAuth();
-  const { getStoreById, getReviewsByStoreId, isFavorite, toggleFavorite } =
-    useStoreData();
+  const auth = useAuth();
+  const { isAuthenticated, currentUser } = auth;
+
+  const {
+    getStoreById,
+    getReviewsByStoreId,
+    isFavorite,
+  } = useStoreData();
 
   const store = getStoreById(id);
-  const reviews = getReviewsByStoreId(parseInt(id));
-  const isLiked = isFavorite(parseInt(id));
+
+  // Khai báo state trước
+  const [reviews, setReviews] = useState(() => {
+    if (!id) return [];
+    return getReviewsByStoreId(parseInt(id)) || [];
+  });
+
+  // Khai báo hàm sau khi có state
+  const handleNewReview = (newReview) => {
+    setReviews(prev => [newReview, ...prev]);
+  };
 
   const [selectedImage, setSelectedImage] = useState(0);
   const [reviewRating, setReviewRating] = useState(5);
@@ -98,10 +96,9 @@ const StoreDetailPage = () => {
                                     &lt;
                                 </Button>
 
-                                {/* Current Index */}
-                                <div className="text-md font-medium text-gray-700 px-4">
-                                    {selectedImage + 1}
-                                </div>
+                <div className="text-md font-medium text-gray-700 px-4">
+                  {selectedImage + 1}
+                </div>
 
               {/* Next */}
               <Button
@@ -130,41 +127,59 @@ const StoreDetailPage = () => {
 
                     </div>
 
-                    {/* Right Column - Info Card */}
-                    <div className="lg:col-span-1">
-                        <Card className="sticky top-20">
-                            <CardContent className="p-6">
-                                <h3 className="mb-4 text-lg font-semibold">店舗情報</h3>
+          {/* ------------------------------------------------ Right Column ------------------------------------------------ */}
+          <div className="lg:col-span-1">
+            <Card className="sticky top-20">
+              <CardContent className="p-6">
+                <h3 className="mb-4 text-lg font-semibold">店舗情報</h3>
 
                 {/* Address */}
                 <div className="mb-4 flex gap-3">
-                  <MapPin className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                  <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="mb-1 text-sm font-medium">地所</p>
+                    <p className="mb-1 text-sm font-medium">住所</p>
                     <p className="text-sm text-muted-foreground">
-                      {store.address_jp}
+                      {store.address_jp || "住所情報なし"}
                     </p>
                   </div>
                 </div>
 
                 <Separator className="my-4" />
 
-                {/* Opening Hours */}
+                {/* Hours */}
                 <div className="mb-4 flex gap-3">
-                  <Clock className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                  <Clock className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="mb-1 text-sm font-medium">時間</p>
+                    <p className="mb-1 text-sm font-medium">営業時間</p>
                     <p className="text-sm text-muted-foreground">
-                      {store.opening_hours_jp}
+                      {store.opening_hours_jp || "営業時間情報なし"}
                     </p>
                   </div>
                 </div>
 
                 <Separator className="my-4" />
+
+                {/* Phone */}
+                {store.phone_number && (
+                  <>
+                    <div className="mb-4 flex gap-3">
+                      <Phone className="mt-1 h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="mb-1 text-sm font-medium">電話番号</p>
+                        <a
+                          href={`tel:${store.phone_number}`}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          {store.phone_number}
+                        </a>
+                      </div>
+                    </div>
+                    <Separator className="my-4" />
+                  </>
+                )}
 
                 {/* Services */}
-                <div className="flex gap-3">
-                  <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                {store.services && store.services.length > 0 && (
                   <div>
                     <p className="mb-3 text-sm font-medium">サービス</p>
                     <div className="flex flex-wrap gap-2">
@@ -175,7 +190,7 @@ const StoreDetailPage = () => {
                       ))}
                     </div>
                   </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
