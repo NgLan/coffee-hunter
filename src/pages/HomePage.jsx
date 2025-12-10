@@ -186,19 +186,38 @@ const HomePage = () => {
                                 </div>
 
                                 {/* Info */}
+                                {/* Info */}
                                 <CardContent className="flex flex-col justify-center p-6">
+                                    {/* Category */}
                                     <div className="mb-2">
                                         <span className="inline-block px-3 py-1 text-xs font-semibold text-amber-700 bg-amber-100 rounded-full">
                                             カフェ
                                         </span>
                                     </div>
+
+                                    {/* Title */}
                                     <h3 className="mb-3 text-2xl font-bold">
                                         {hotPickStores[currentHotPick].name_jp}
                                     </h3>
+
+                                    {/* Description */}
                                     <p className="mb-4 text-sm text-muted-foreground line-clamp-3">
                                         {hotPickStores[currentHotPick].description_jp}
                                     </p>
-                                    <div className="mb-2 flex items-center gap-2">
+
+                                    {/* 1️⃣ ĐỊA ĐIỂM */}
+                                    <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                                        <span className="line-clamp-1">
+                                            {hotPickStores[currentHotPick].address_jp}
+                                        </span>
+                                        <span className="ml-auto text-xs font-medium">
+                                            {hotPickStores[currentHotPick].distance}km
+                                        </span>
+                                    </div>
+
+                                    {/* 2️⃣ ĐÁNH GIÁ SAO */}
+                                    <div className="mb-3 flex items-center gap-2">
                                         <div className="flex items-center">
                                             <span className="text-lg font-bold text-amber-600">
                                                 ★ {hotPickStores[currentHotPick].avg_rating}
@@ -208,15 +227,16 @@ const HomePage = () => {
                                             </span>
                                         </div>
                                     </div>
+
+                                    {/* 3️⃣ THỜI GIAN MỞ CỬA */}
                                     <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                                        <span className="text-lg">⏰</span>
                                         <span className="line-clamp-1">
-                                            {hotPickStores[currentHotPick].address_jp}
-                                        </span>
-                                        <span className="ml-auto text-xs font-medium">
-                                            {hotPickStores[currentHotPick].distance}km
+                                            {hotPickStores[currentHotPick].opening_hours_jp}
                                         </span>
                                     </div>
+
+                                    {/* Button */}
                                     <Link to={`/store/${hotPickStores[currentHotPick].id}`}>
                                         <Button className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700">
                                             詳細を見る
