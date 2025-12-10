@@ -3,8 +3,9 @@ import React, { useContext, useState } from "react";
 import { ReviewForm } from "./ReviewForm";
 import { LoginPrompt } from "./LoginPrompt";
 
-import { AuthContext } from "../../contexts/AuthContext";
+// import { AuthContext } from "../../contexts/AuthContext";
 import { useStoreData } from "@/hooks/useStoreData";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Props = {
   storeId: number; // luôn bắt buộc
@@ -12,9 +13,9 @@ type Props = {
 };
 
 export const ReviewTrigger: React.FC<Props> = ({ storeId, onNewReview }) => {
-  const auth = useContext<any>(AuthContext);
+  const auth = useAuth();
 
-  const isLoggedIn = !!auth?.user;
+  const isLoggedIn = auth?.isAuthenticated || !!auth?.currentUser;
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showForm, setShowForm] = useState(false);
