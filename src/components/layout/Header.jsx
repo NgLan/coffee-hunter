@@ -42,8 +42,14 @@ const Header = () => {
     // Xử lý search
     const handleSearch = (e) => {
         e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+        const trimmedQuery = searchQuery.trim();
+        if (trimmedQuery) {
+            navigate(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+        } else {
+            // Nếu không có query, hiển thị tất cả các quán
+            // Clear search input và navigate về /search với timestamp để force reload
+            setSearchQuery("");
+            navigate(`/search?t=${Date.now()}`);
         }
     };
 

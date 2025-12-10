@@ -21,6 +21,7 @@ import {
 const SearchResultPage = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get("q") || "";
+    const timestamp = searchParams.get("t"); // Để detect khi search rỗng được submit
 
     const { stores } = useStoreData();
 
@@ -36,6 +37,15 @@ const SearchResultPage = () => {
     // Filtered and sorted results
     const [displayStores, setDisplayStores] = useState([]);
     const [paginatedStores, setPaginatedStores] = useState([]);
+
+    // Reset filters khi search rỗng và có timestamp (submit search rỗng)
+    useEffect(() => {
+        if (!query && timestamp) {
+            setSelectedSpaceTypes([]);
+            setSelectedServices([]);
+            setMinRating(0);
+        }
+    }, [query, timestamp]);
 
     // Update results when filters change
     useEffect(() => {
