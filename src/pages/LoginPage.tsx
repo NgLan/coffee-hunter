@@ -2,122 +2,152 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from '../components/features/AuthForm.module.css';
-import { useToast } from '@/hooks/use-toast';
+// import { useToast } from '@/hooks/use-toast';
 
 const LoginPage: React.FC = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const { toast } = useToast();
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
-  
-  const [errors, setErrors] = useState<Record<string, string>>({});
+    const navigate = useNavigate();
+    const { login } = useAuth();
+    // const { toast } = useToast();
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
-    }
-  };
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const [submitError, setSubmitError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    if (!formData.email.trim()) {
-      newErrors.email = 'メールアドレスを入力してください';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = '有効なメールアドレスを入力してください';
-    }
+    const handleInputChange = (field: string, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        // Clear error when user types
+        if (submitError) {
+            setSubmitError('');
+        }
+    };
 
-    if (!formData.password) {
-      newErrors.password = 'パスワードを入力してください';
-    }
+    // Validate email format
+    const validateEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    // Validate password strength (at least 2 out of 3: letters, numbers, symbols)
+    const validatePassword = (password: string): boolean => {
+        if (password.length === 0) return false;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+        const hasLetters = /[a-zA-Z]/.test(password);
+        const hasNumbers = /[0-9]/.test(password);
+        const hasSymbols = /[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]/.test(password);
 
-    const result = login(formData.email, formData.password);
+        const strengthCount = [hasLetters, hasNumbers, hasSymbols].filter(Boolean).length;
+        return strengthCount >= 2;
+    };
 
-    if (result.success) {
-      toast({
-        title: "ログイン成功",
-        description: "ログインしました",
-      });
-      
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
-    } else {
-      setErrors({ email: result.error || 'ログインに失敗しました' });
-    }
-  };
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
 
-  const handleRegisterLink = () => {
-    navigate('/register');
-  };
+        // // Validate format (silently)
+        // if (!validateEmail(formData.email) || !validatePassword(formData.password)) {
+        //     setSubmitError('メールアドレスまたはパスワードが正しくありません');
+        //     return;
+        // }
 
-  return (
-    <div className={styles.pageContainer}>
-      <div className={styles.formWrapper}>
-        <div className={styles.header}>
-          <h1 className={styles.appTitle}>Coffee Hunter</h1>
+        setIsLoading(true);
+
+        // Simulate API call delay
+        setTimeout(() => {
+            const result = login(formData.email, formData.password);
+
+            if (result.success) {
+                // Save login state to localStorage
+                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem('userEmail', formData.email);
+
+                // Redirect to home page after 1.5 seconds
+                setTimeout(() => {
+                    navigate('/');
+                }, 1500);
+            } else {
+                console.log('Login failed:', result.error);
+                const errorMessage = result.error || 'メールアドレスまたはパスワードが正しくありません';
+                setSubmitError(errorMessage);
+            }
+
+            setIsLoading(false);
+        }, 500);
+    };
+
+    const handleRegisterLink = () => {
+        navigate('/register');
+    };
+
+    return (
+        <div className={styles.pageContainer}>
+            <div className={styles.formWrapper}>
+                <div className={styles.header}>
+                    <h1 className={styles.appTitle}>Coffee Hunter</h1>
+                </div>
+
+                <div className={styles.formContainer}>
+                    <h2 className={styles.formTitle}>ログイン</h2>
+
+                    <form onSubmit={handleSubmit}>
+                        {/* Email */}
+                        <div className={styles.formRow}>
+                            <input
+                                type="email"
+                                placeholder="メールアドレス"
+                                value={formData.email}
+                                onChange={(e) => handleInputChange('email', e.target.value)}
+                                className={styles.input}
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        {/* Password */}
+                        <div className={styles.formRow}>
+                            <input
+                                type="password"
+                                placeholder="パスワード"
+                                value={formData.password}
+                                onChange={(e) => handleInputChange('password', e.target.value)}
+                                className={styles.input}
+                                disabled={isLoading}
+                            />
+                        </div>
+
+                        {/* Submit Error */}
+                        {submitError && (
+                            <div className={styles.formRow}>
+                                <div className={styles.error}>{submitError}</div>
+                            </div>
+                        )}
+
+                        {/* Submit Button */}
+                        <button 
+                            type="submit" 
+                            className={styles.submitButton}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? 'ログイン中...' : 'ログイン'}
+                        </button>
+
+                        {/* Register Link */}
+                        <div className={styles.linkRow}>
+                            <button
+                                type="button"
+                                onClick={handleRegisterLink}
+                                className={styles.link}
+                                disabled={isLoading}
+                            >
+                                アカウントをお持ちでない方はこちら
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div className={styles.formContainer}>
-          <h2 className={styles.formTitle}>ログイン</h2>
-
-          <form onSubmit={handleSubmit}>
-            <div className={styles.formRow}>
-              <input
-                type="email"
-                placeholder="メールアドレス"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                className={styles.input}
-              />
-              {errors.email && <div className={styles.error}>{errors.email}</div>}
-            </div>
-
-            <div className={styles.formRow}>
-              <input
-                type="password"
-                placeholder="パスワード"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                className={styles.input}
-              />
-              {errors.password && <div className={styles.error}>{errors.password}</div>}
-            </div>
-
-            <button type="submit" className={styles.submitButton}>
-              ログイン
-            </button>
-
-            <div className={styles.linkRow}>
-              <button
-                type="button"
-                onClick={handleRegisterLink}
-                className={styles.link}
-              >
-                アカウントをお持ちでない方はこちら
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default LoginPage;
