@@ -147,7 +147,7 @@ const SearchResultPage = () => {
                         {paginatedStores.length > 0 ? (
                             <>
                                 {/* Store List */}
-                                <div className="space-y-4">
+                                <div className="space-y-8">
                                     {paginatedStores.map((store) => (
                                         <StoreListItem key={store.id} store={store} />
                                     ))}

@@ -12,8 +12,8 @@ import { Card, CardContent } from "@/components/ui/card";
  */
 const StoreListItem = ({ store }) => {
     return (
-        <Link to={`/store/${store.id}`}>
-            <Card className="group overflow-hidden transition-all hover:shadow-md">
+        <Link to={`/store/${store.id}`} className="block">
+            <Card className="group overflow-hidden transition-all hover:shadow-lg">
                 <CardContent className="p-0">
                     <div className="flex gap-0">
                         {/* Image - Left Side (Square) */}
@@ -28,7 +28,7 @@ const StoreListItem = ({ store }) => {
                         </div>
 
                         {/* Info - Right Side */}
-                        <div className="relative flex flex-1 flex-col justify-center gap-4 py-5 pr-4 pl-5 sm:pl-6">
+                        <div className="relative flex flex-1 flex-col justify-center gap-5 py-6 pr-5 pl-6 sm:pl-7 lg:py-7">
                             {/* Row 1: Store Name + Rating Stars (Same line) */}
                             <div className="flex items-center justify-between gap-3">
                                 {/* Store Name */}
@@ -41,14 +41,14 @@ const StoreListItem = ({ store }) => {
                                     {[1, 2, 3, 4, 5].map((star) => {
                                         const isFull = star <= Math.floor(store.avg_rating);
                                         const isHalf = !isFull && star === Math.ceil(store.avg_rating) && store.avg_rating % 1 !== 0;
-                                        
+
                                         return (
                                             <div key={star} className="relative h-5 w-5">
                                                 {/* Background star (gray) */}
                                                 <Star className="absolute inset-0 h-5 w-5 fill-gray-300 text-gray-300" />
                                                 {/* Foreground star (yellow) */}
                                                 {(isFull || isHalf) && (
-                                                    <Star 
+                                                    <Star
                                                         className="absolute inset-0 h-5 w-5 fill-yellow-400 text-yellow-400"
                                                         style={isHalf ? {
                                                             clipPath: 'inset(0 50% 0 0)'
@@ -69,7 +69,7 @@ const StoreListItem = ({ store }) => {
                                     <div className="flex items-center gap-2">
                                         <MapPin className="h-5 w-5 flex-shrink-0" />
                                         <span className="text-sm sm:text-base font-medium line-clamp-1 max-w-[140px] sm:max-w-[180px]">
-                                            {store.address_jp.includes('区') 
+                                            {store.address_jp.includes('区')
                                                 ? store.address_jp.split('区')[1]?.split('通り')[0]?.trim() || store.address_jp.split('区')[0]?.split('市')[1]?.trim() || '場所'
                                                 : store.address_jp.split('市')[1]?.split('通り')[0]?.trim() || '場所'
                                             }
