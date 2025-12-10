@@ -134,13 +134,17 @@ const FilterPanel = ({
     return (
         <>
             {/* Desktop Version */}
-            <div className="hidden lg:block">
-                <div className="sticky top-20 rounded-lg border bg-card p-6">
-                    <div className="mb-4 flex items-center gap-2">
-                        <SlidersHorizontal className="h-5 w-5" />
-                        <h2 className="text-lg font-semibold">フィルター</h2>
+            <div className="hidden lg:block sticky top-20">
+                <div className="flex flex-col rounded-lg border bg-card max-h-[calc(100vh-6rem)]">
+                    <div className="flex-shrink-0 p-6 pb-2">
+                        <div className="flex items-center gap-2">
+                            <SlidersHorizontal className="h-5 w-5" />
+                            <h2 className="text-lg font-semibold">フィルター</h2>
+                        </div>
                     </div>
-                    <FilterContent />
+                    <div className="overflow-y-auto p-6 pt-2">
+                        <FilterContent />
+                    </div>
                 </div>
             </div>
 
