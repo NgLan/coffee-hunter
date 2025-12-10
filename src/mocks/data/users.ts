@@ -26,6 +26,12 @@ export const MOCK_USERS: User[] = [
     gender: "male",
   },
 ];
-
-// Giả lập danh sách ID quán yêu thích (User ID 1)
-export const MOCK_FAVORITES: number[] = [1, 3, 5];
+export const MOCK_FAVORITES = [
+  { user_id: 1, store_id: 1 },  // User 1 likes Store 1
+  { user_id: 1, store_id: 3 },  // User 1 likes Store 3
+  { user_id: 1, store_id: 5 },  // User 1 likes Store 5
+  { user_id: 1, store_id: 6 },  // User 1 likes Store 6 (Rooftop View - gần nhất 0.8km)
+  { user_id: 2, store_id: 2 },  // User 2 likes Store 2
+  { user_id: 2, store_id: 4 },  // User 2 likes Store 4
+  { user_id: 3, store_id: 7 },  // User 3 likes Store 7
+];
