@@ -39,6 +39,8 @@ const Header = () => {
     // Đếm số thông báo chưa đọc
     const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.is_read).length;
 
+    console.log("Current User in Header:", currentUser);
+
     // Xử lý search
     const handleSearch = (e) => {
         e.preventDefault();

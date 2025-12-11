@@ -1,16 +1,37 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MOCK_STORES } from "@/mocks/data/stores";
 import { initReviews, addReview as persistAddReview } from "@/mocks/data/reviews";
 import { MOCK_FAVORITES } from "@/mocks/data/users";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Custom hook để quản lý dữ liệu stores
  * Bao gồm filter, sort và các thao tác liên quan
  */
 export const useStoreData = () => {
+    const { currentUser } = useAuth();
     const [stores, setStores] = useState(MOCK_STORES);
     const [reviews, setReviews] = useState(() => initReviews());
-    const [favorites, setFavorites] = useState(MOCK_FAVORITES);
+    
+    // State để lưu danh sách favorites (sync với localStorage)
+    const [favorites, setFavorites] = useState(() => {
+        const saved = localStorage.getItem("user_favorites");
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Error parsing favorites:", e);
+                return MOCK_FAVORITES;
+            }
+        }
+        // Nếu chưa có trong localStorage, dùng MOCK_FAVORITES
+        return MOCK_FAVORITES;
+    });
+
+    // Sync favorites với localStorage mỗi khi thay đổi
+    useEffect(() => {
+        localStorage.setItem("user_favorites", JSON.stringify(favorites));
+    }, [favorites]);
 
     // Lấy reviews theo store ID
     const getReviewsByStoreId = (storeId) => {
@@ -19,22 +40,50 @@ export const useStoreData = () => {
 
     // Kiểm tra store có phải favorite không
     const isFavorite = (storeId) => {
-        return favorites.includes(storeId);
+        if (!currentUser) return false;
+        return favorites.some(
+            (fav) => fav.user_id === currentUser.id && fav.store_id === storeId
+        );
     };
 
     // Toggle favorite
     const toggleFavorite = (storeId) => {
-        setFavorites((prev) => {
-            if (prev.includes(storeId)) {
-                return prev.filter((id) => id !== storeId);
-            }
-            return [...prev, storeId];
-        });
+        if (!currentUser) {
+            alert("ログインしてください");
+            return;
+        }
+
+        const isCurrentlyFavorite = isFavorite(storeId);
+
+        if (isCurrentlyFavorite) {
+            // Xóa khỏi favorites
+            setFavorites((prev) =>
+                prev.filter(
+                    (fav) =>
+                        !(fav.user_id === currentUser.id && fav.store_id === storeId)
+                )
+            );
+        } else {
+            // Thêm vào favorites
+            const newFavorite = {
+                id: Date.now(), // Generate unique ID
+                user_id: currentUser.id,
+                store_id: storeId,
+                created_at: new Date().toISOString(),
+            };
+            setFavorites((prev) => [...prev, newFavorite]);
+        }
     };
 
-    // Lấy favorite stores
+    // Lấy favorite stores của user hiện tại
     const getFavoriteStores = () => {
-        return stores.filter((store) => favorites.includes(store.id));
+        if (!currentUser) return [];
+        
+        const favoriteStoreIds = favorites
+            .filter((fav) => fav.user_id === currentUser.id)
+            .map((fav) => fav.store_id);
+
+        return stores.filter((store) => favoriteStoreIds.includes(store.id));
     };
 
     // Filter stores theo rating, services và space_type

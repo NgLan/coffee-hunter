@@ -144,7 +144,7 @@ const ReviewSection = ({
         payload.author ||
         "匿名";
       const user_avatar =
-        effectiveCurrentUser?.avatar ||
+        effectiveCurrentUser?.avatar_url ||
         "https://api.dicebear.com/7.x/avataaars/svg?seed=random";
 
       const payloadForHook = {
