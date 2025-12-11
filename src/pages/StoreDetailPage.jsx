@@ -192,7 +192,7 @@ const StoreDetailPage = () => {
                   </div>
 
                   {/* Pagination */}
-                  {totalPages > 1 && (
+                  {totalPages > 0 && (
                     <div className="mt-6 flex items-center justify-center gap-4">
                       <Button
                         variant="outline"
