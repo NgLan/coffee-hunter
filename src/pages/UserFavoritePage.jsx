@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Heart,
@@ -9,19 +9,30 @@ import {
   Star,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
-import { MOCK_USERS } from "@/mocks/data/users";
 import { useAuth } from "@/contexts/AuthContext";
 import { useStoreData } from "@/hooks/useStoreData";
 
 export default function UserFavoritePage() {
-  const { logout } = useAuth();
-  const [currentUser] = useState(MOCK_USERS[0]);
+  const { logout, isAuthenticated, currentUser } = useAuth();
   const [activeMenu, setActiveMenu] = useState("favorites");
   const navigate = useNavigate();
   
   // Sử dụng hook để lấy danh sách yêu thích
   const { getFavoriteStores } = useStoreData();
   const favoriteStores = getFavoriteStores();
+
+  // Kiểm tra authentication khi component mount
+  useEffect(() => {
+    if (!isAuthenticated) {
+      alert("ログインしてください");
+      navigate("/login");
+    }
+  }, [isAuthenticated, navigate]);
+
+  // Nếu chưa login, không render gì cả
+  if (!isAuthenticated || !currentUser) {
+    return null;
+  }
 
   const handleCafeClick = (cafeId) => {
     navigate(`/store/${cafeId}`);
