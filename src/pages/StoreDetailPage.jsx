@@ -1,8 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MapPin, Clock, Phone, Star, Heart, ArrowLeft } from "lucide-react";
+import { MapPin, Clock, Phone, ArrowLeft, Heart, Star } from "lucide-react";
 import Header from "@/components/layout/Header";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,83 +9,77 @@ import { Separator } from "@/components/ui/separator";
 import { useStoreData } from "@/hooks/useStoreData";
 import { useAuth } from "@/contexts/AuthContext";
 import ReviewSection from "@/components/features/ReviewSection";
+import { ReviewTrigger } from "@/components/features/ReviewTrigger";
 
-/**
-import { ReviewForm } from "@/components/features/ReviewForm";
- * Store Detail Page - Màn hình chi tiết quán (画面No.7)
- * Hiển thị: Images, Info, Services, Menu, Reviews
- */
 const StoreDetailPage = () => {
   const { id } = useParams();
   const auth = useAuth();
   const { isAuthenticated, currentUser } = auth;
+
   const {
     getStoreById,
     getReviewsByStoreId,
     isFavorite,
     toggleFavorite,
-    addReview,
   } = useStoreData();
+
   const store = getStoreById(id);
- const [reviews, setReviews] = useState(() => {
-    // Tạo key unique cho mỗi store, ví dụ: "reviews_1", "reviews_2"
-    const storageKey = `reviews_${id}`; 
-    const saved = localStorage.getItem(storageKey);
-    
-    if (saved) {
-      return JSON.parse(saved);
-    }
-    
-    // Nếu chưa có trong storage, lấy dữ liệu gốc
+
+  // Reviews
+  const [reviews, setReviews] = useState(() => {
+    if (!id) return [];
     return getReviewsByStoreId(parseInt(id)) || [];
   });
 
-  const isLiked = isFavorite(parseInt(id));
+  const handleNewReview = (newReview) => {
+    setReviews((prev) => [newReview, ...prev]);
+  };
 
   const [selectedImage, setSelectedImage] = useState(0);
 
-  const handleSubmitReview = (_, payload) => {
-    // Chuẩn bị dữ liệu đầy đủ
-    const created_at = payload.createdAt || new Date().toISOString();
-    const user_id = currentUser?.id || null;
-    const user_name = currentUser?.name || currentUser?.username || payload.user_name || payload.author || "匿名";
-    const user_avatar = currentUser?.avatar || payload.user_avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=random";
+  const isLiked = id ? isFavorite(parseInt(id)) : false;
 
-    const newReview = {
-      ...payload,
-      id: Date.now(), // Tạo ID giả để không bị trùng
-      created_at,
-      user_id,
-      user_name,
-      user_avatar,
-    };
+  // ===== SAFE IMAGES =====
+  const images =
+    store?.images && store.images.length > 0
+      ? store.images
+      : ["/placeholder-image.jpg"];
 
-    // 1. Cập nhật State để hiển thị ngay lập tức
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
-
-    // 2. LƯU VÀO LOCAL STORAGE (Đây là bước quan trọng nhất để không bị mất khi F5)
-    localStorage.setItem(`reviews_${store.id}`, JSON.stringify(updatedReviews));
-    if (typeof addReview === "function") {
-      addReview(store.id, newReview);
+  // Fix render loop
+  useEffect(() => {
+    if (selectedImage >= images.length) {
+      setSelectedImage(0);
     }
-    // After adding review the ReviewSection component resets page internally; nothing else to do here
-  };
+  }, [images.length, selectedImage]);
 
+  // Menu
+  const itemsPerPage = 6;
+  const menuItems = store?.menu || [];
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = Math.max(1, Math.ceil(menuItems.length / itemsPerPage));
+
+  const currentItems = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return menuItems.slice(start, start + itemsPerPage);
+  }, [menuItems, currentPage]);
+
+  // ===== Store not found =====
   if (!store) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-8xl">
+        <main className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4">
-            <Button variant="ghost">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              戻る
-            </Button>
+            <Link to="/">
+              <Button variant="ghost">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                戻る
+              </Button>
+            </Link>
             <div>
               <h3 className="text-lg font-semibold">店舗が見つかりません</h3>
               <p className="text-muted-foreground">
-                該当する店舗は存在しないか、削除されました。
+                該当する店舗は存在しません。
               </p>
             </div>
           </div>
@@ -94,51 +87,51 @@ const StoreDetailPage = () => {
       </div>
     );
   }
-  // Review section is now handled by `ReviewSection` component (sorting, paging, modals)
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-8xl">
-        {/* Back Button */}
+      <main className="container mx-auto px-4 py-8 max-w-8xl">
         <Link to="/">
           <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            戻る
+            <ArrowLeft className="mr-2 h-4 w-4" /> 戻る
           </Button>
         </Link>
 
         <div className="grid gap-8 lg:grid-cols-3">
-          {/* Left Column - Images & Basic Info */}
+          {/* LEFT COLUMN */}
           <div className="lg:col-span-2">
             {/* Image Gallery */}
             <div className="mb-6">
               {/* Main Image */}
               <div className="relative mb-4 overflow-hidden rounded-lg">
                 <img
-                  src={store.images[selectedImage]}
+                  src={images[selectedImage]}
                   alt={store.name_jp}
                   className="aspect-video w-full object-cover"
                 />
+
                 {/* Favorite Button */}
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="absolute right-4 top-4 h-10 w-10 rounded-full shadow-lg"
+                  className={`absolute right-4 top-4 h-10 w-10 rounded-full shadow-lg transition-all ${
+                    isLiked ? "bg-red-500 hover:bg-red-600" : ""
+                  }`}
                   onClick={() => toggleFavorite(store.id)}
                 >
                   <Heart
-                    className={`h-5 w-5 ${
-                      isLiked ? "fill-destructive text-destructive" : ""
+                    className={`h-5 w-5 transition-all ${
+                      isLiked ? "fill-white text-white" : ""
                     }`}
                   />
                 </Button>
               </div>
 
-              {/* Thumbnail Grid */}
+              {/* Thumbnails */}
               <div className="grid grid-cols-3 gap-2">
-                {store.images.map((img, idx) => (
+                {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
@@ -158,84 +151,130 @@ const StoreDetailPage = () => {
               </div>
             </div>
 
-            {/* Store Name & Rating */}
-            <div className="mb-6">
-              <h1 className="mb-3 text-3xl font-bold">{store.name_jp}</h1>
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1">
-                  <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  <span className="text-xl font-semibold">
-                    {store.avg_rating}
-                  </span>
-                  <span className="text-muted-foreground">
-                    ({store.review_count}件のレビュー)
-                  </span>
-                </div>
-              </div>
-            </div>
-
             {/* Description */}
-            <Card className="mb-6">
+            <Card className="mb-8 mt-6">
               <CardContent className="p-6">
-                <h3 className="mb-3 text-lg font-semibold">店舗について</h3>
-                <p className="text-muted-foreground">{store.description_jp}</p>
+                <h3 className="mb-3 text-lg font-semibold">説明</h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  {store.description_jp || "説明はありません"}
+                </p>
               </CardContent>
             </Card>
 
-            {/* Menu Section */}
-            <Card className="mb-6">
-              <CardContent className="p-6">
-                <h3 className="mb-4 text-lg font-semibold">メニュー</h3>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {store.menu.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-4 rounded-lg border p-4"
-                    >
-                      <img
-                        src={item.image_url}
-                        alt={item.name_jp}
-                        className="h-20 w-20 rounded-lg object-cover"
-                      />
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{item.name_jp}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {item.description_jp}
-                        </p>
-                        <p className="mt-2 font-semibold text-primary">
-                          {item.price.toLocaleString()}đ
-                        </p>
+            {/* Menu */}
+            {menuItems.length > 0 && (
+              <Card className="mb-6">
+                <CardContent className="p-6">
+                  <h3 className="mb-4 text-lg font-semibold">メニュー</h3>
+
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {currentItems.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex gap-4 rounded-lg border p-4"
+                      >
+                        <img
+                          src={item.image_url}
+                          alt={item.name_jp}
+                          className="h-20 w-20 rounded-lg object-cover"
+                        />
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{item.name_jp}</h4>
+                          <p className="text-sm text-muted-foreground">
+                            {item.description_jp}
+                          </p>
+                          <p className="mt-2 font-semibold text-primary">
+                            {item.price.toLocaleString()}đ
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                    ))}
+                  </div>
 
-            <Card>
-              <CardContent className="p-6">
-                <ReviewSection
-                  reviews={reviews}
-                  isAuthenticated={isAuthenticated}
-                  currentUser={currentUser}
-                  onAddReview={handleSubmitReview}
-                  storeId={store.id}
-                />
-              </CardContent>
-            </Card>
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex items-center justify-center gap-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
+                      >
+                        &lt;
+                      </Button>
+
+                      <span className="text-sm font-medium">
+                        {currentPage} / {totalPages}
+                      </span>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === totalPages}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                      >
+                        &gt;
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Review Form */}
+            
+
+            {/* Reviews */}
+            <ReviewSection reviews={reviews} />
           </div>
 
-          {/* Right Column - Info Card */}
+          {/* RIGHT COLUMN */}
           <div className="lg:col-span-1">
             <Card className="sticky top-20">
               <CardContent className="p-6">
-                <h3 className="mb-4 text-lg font-semibold">店舗情報</h3>
+                <div className="mb-4 flex items-start justify-between">
+                  <h1 className="text-2xl font-bold">{store.name_jp}</h1>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className={`transition-all ${
+                      isLiked ? "bg-red-100 hover:bg-red-200" : ""
+                    }`}
+                    onClick={() => toggleFavorite(store.id)}
+                  >
+                    <Heart
+                      className={`h-6 w-6 transition-all ${
+                        isLiked ? "fill-red-500 text-red-500" : ""
+                      }`}
+                    />
+                  </Button>
+                </div>
+
+                {/* Rating */}
+                <div className="mb-4 flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < Math.floor(store.avg_rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                <Separator className="my-4" />
 
                 {/* Address */}
                 <div className="mb-4 flex gap-3">
-                  <MapPin className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                  <MapPin className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="mb-1 text-sm font-medium">住所</p>
+                    <p className="mb-1 text-sm font-medium">地所</p>
                     <p className="text-sm text-muted-foreground">
                       {store.address_jp}
                     </p>
@@ -246,9 +285,9 @@ const StoreDetailPage = () => {
 
                 {/* Opening Hours */}
                 <div className="mb-4 flex gap-3">
-                  <Clock className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
+                  <Clock className="mt-1 h-5 w-5 text-muted-foreground" />
                   <div>
-                    <p className="mb-1 text-sm font-medium">営業時間</p>
+                    <p className="mb-1 text-sm font-medium">時間</p>
                     <p className="text-sm text-muted-foreground">
                       {store.opening_hours_jp}
                     </p>
@@ -257,31 +296,18 @@ const StoreDetailPage = () => {
 
                 <Separator className="my-4" />
 
-                {/* Phone */}
-                <div className="mb-4 flex gap-3">
-                  <Phone className="mt-1 h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                  <div>
-                    <p className="mb-1 text-sm font-medium">電話番号</p>
-                    <a
-                      href={`tel:${store.phone_number}`}
-                      className="text-sm text-primary hover:underline"
-                    >
-                      {store.phone_number}
-                    </a>
-                  </div>
-                </div>
-
-                <Separator className="my-4" />
-
                 {/* Services */}
-                <div>
-                  <p className="mb-3 text-sm font-medium">サービス</p>
-                  <div className="flex flex-wrap gap-2">
-                    {store.services.map((service, idx) => (
-                      <Badge key={idx} variant="secondary">
-                        {service}
-                      </Badge>
-                    ))}
+                <div className="flex gap-3">
+                  <Phone className="mt-1 h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="mb-3 text-sm font-medium">サービス</p>
+                    <div className="flex flex-wrap gap-2">
+                      {(store.services || []).map((service, idx) => (
+                        <Badge key={idx} variant="secondary">
+                          {service}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </CardContent>
