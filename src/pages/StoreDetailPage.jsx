@@ -226,7 +226,7 @@ const StoreDetailPage = () => {
             )}
 
             {/* Review Form */}
-            <ReviewTrigger storeId={store.id} onNewReview={handleNewReview} />
+            
 
             {/* Reviews */}
             <ReviewSection reviews={reviews} />
