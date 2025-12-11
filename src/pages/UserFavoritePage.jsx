@@ -7,28 +7,21 @@ import {
   ChevronRight,
   LogOut,
   Star,
-  Bell,
-  User as UserIcon,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
-import { MOCK_STORES } from "@/mocks/data/stores";
-import { MOCK_USERS, MOCK_FAVORITES } from "@/mocks/data/users";
+import { MOCK_USERS } from "@/mocks/data/users";
 import { useAuth } from "@/contexts/AuthContext";
+import { useStoreData } from "@/hooks/useStoreData";
 
 export default function UserFavoritePage() {
   const { logout } = useAuth();
   const [currentUser] = useState(MOCK_USERS[0]);
   const [activeMenu, setActiveMenu] = useState("favorites");
   const navigate = useNavigate();
-
-  const favoriteStoreIds = MOCK_FAVORITES.filter(
-    (fav) => fav.user_id === currentUser.id
-  ).map((fav) => fav.store_id);
-
-  // Get favorite stores
-  const favoriteStores = MOCK_STORES.filter((store) =>
-    favoriteStoreIds.includes(store.id)
-  );
+  
+  // Sử dụng hook để lấy danh sách yêu thích
+  const { getFavoriteStores } = useStoreData();
+  const favoriteStores = getFavoriteStores();
 
   const handleCafeClick = (cafeId) => {
     navigate(`/store/${cafeId}`);
@@ -36,8 +29,8 @@ export default function UserFavoritePage() {
 
   const handleLogout = () => {
     if (window.confirm("ログアウトしますか？")) {
-      logout(); // Gọi hàm logout từ AuthContext
-      navigate("/login"); // Chuyển về trang login sau khi logout
+      logout();
+      navigate("/login");
     }
   };
 
@@ -163,7 +156,7 @@ export default function UserFavoritePage() {
                     <div className="ml-4">
                       <button
                         onClick={(e) => {
-                          e.stopPropagation(); // Ngăn event bubble lên card
+                          e.stopPropagation();
                           handleCafeClick(store.id);
                         }}
                         className="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:bg-gray-800 transition-colors cursor-pointer"

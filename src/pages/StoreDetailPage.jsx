@@ -116,12 +116,14 @@ const StoreDetailPage = () => {
                 <Button
                   size="icon"
                   variant="secondary"
-                  className="absolute right-4 top-4 h-10 w-10 rounded-full shadow-lg"
+                  className={`absolute right-4 top-4 h-10 w-10 rounded-full shadow-lg transition-all ${
+                    isLiked ? "bg-red-500 hover:bg-red-600" : ""
+                  }`}
                   onClick={() => toggleFavorite(store.id)}
                 >
                   <Heart
-                    className={`h-5 w-5 ${
-                      isLiked ? "fill-destructive text-destructive" : ""
+                    className={`h-5 w-5 transition-all ${
+                      isLiked ? "fill-white text-white" : ""
                     }`}
                   />
                 </Button>
@@ -239,11 +241,14 @@ const StoreDetailPage = () => {
                   <Button
                     size="icon"
                     variant="ghost"
+                    className={`transition-all ${
+                      isLiked ? "bg-red-100 hover:bg-red-200" : ""
+                    }`}
                     onClick={() => toggleFavorite(store.id)}
                   >
                     <Heart
-                      className={`h-6 w-6 ${
-                        isLiked ? "fill-destructive text-destructive" : ""
+                      className={`h-6 w-6 transition-all ${
+                        isLiked ? "fill-red-500 text-red-500" : ""
                       }`}
                     />
                   </Button>
