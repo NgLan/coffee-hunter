@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -24,23 +23,7 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    // Validate email format
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
-    // Validate password strength (at least 2 out of 3: letters, numbers, symbols)
-    const validatePassword = (password: string): boolean => {
-        if (password.length === 0) return false;
-
-        const hasLetters = /[a-zA-Z]/.test(password);
-        const hasNumbers = /[0-9]/.test(password);
-        const hasSymbols = /[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]/.test(password);
-
-        const strengthCount = [hasLetters, hasNumbers, hasSymbols].filter(Boolean).length;
-        return strengthCount >= 2;
-    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
