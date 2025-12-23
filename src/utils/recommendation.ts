@@ -10,7 +10,7 @@ export const USER_NEEDS = [
         label_jp: '仕事・勉強',
         label_vn: 'Làm việc/Học bài',
         icon: '💻',
-        description: 'Wi-Fi tốt, yên tĩnh, có ổ cắm'
+        description: 'Wi-Fi tốt, yên tĩnh, có ổ cắm điện'
     },
     {
         id: 'date',
@@ -38,7 +38,7 @@ export const USER_NEEDS = [
         label_jp: 'グループ',
         label_vn: 'Tụ tập nhóm',
         icon: '👥',
-        description: 'Không gian rộng, nhiều chỗ ngồi'
+        description: 'Không gian rộng, nhiều chỗ ngồi, phù hợp họp mặt'
     },
     {
         id: 'relax',
@@ -54,13 +54,98 @@ export const USER_NEEDS = [
         icon: '🌿',
         description: 'Sân vườn, cây xanh, không khí trong lành'
     },
+    // NEW TAGS - Phù hợp với mock data
+    {
+        id: 'food',
+        label_jp: '食事',
+        label_vn: 'Có đồ ăn',
+        icon: '🍽️',
+        description: 'Phục vụ đồ ăn, bữa sáng, bữa trưa, bánh ngọt'
+    },
+    {
+        id: 'breakfast',
+        label_jp: '朝食',
+        label_vn: 'Bữa sáng',
+        icon: '🥐',
+        description: 'Có menu bữa sáng, mở cửa sớm'
+    },
+    {
+        id: 'dessert',
+        label_jp: 'デザート',
+        label_vn: 'Bánh ngọt',
+        icon: '🍰',
+        description: 'Bánh handmade, tráng miệng, món ngọt'
+    },
+    {
+        id: 'view',
+        label_jp: '景色',
+        label_vn: 'View đẹp',
+        icon: '🌅',
+        description: 'Tầng cao, view hồ, view sông, view thành phố'
+    },
+    {
+        id: 'outdoor',
+        label_jp: '屋外',
+        label_vn: 'Ngoài trời',
+        icon: '☀️',
+        description: 'Chỗ ngồi ngoài trời, ban công, sân thượng'
+    },
+    {
+        id: 'bar',
+        label_jp: 'バー',
+        label_vn: 'Có bar/Rượu',
+        icon: '🍷',
+        description: 'Có quầy bar, đồ uống có cồn, không khí tối'
+    },
+    {
+        id: 'meeting',
+        label_jp: '会議',
+        label_vn: 'Họp/Làm việc nhóm',
+        icon: '🤝',
+        description: 'Có phòng họp, không gian cho team, projector'
+    },
+    {
+        id: 'pet',
+        label_jp: 'ペット',
+        label_vn: 'Thú cưng',
+        icon: '🐕',
+        description: 'Cho phép mang thú cưng vào'
+    },
+    {
+        id: 'music',
+        label_jp: '音楽',
+        label_vn: 'Âm nhạc',
+        icon: '🎵',
+        description: 'Nhạc sống, nhạc cổ điển, không gian nghệ thuật'
+    },
+    {
+        id: 'lake',
+        label_jp: '湖畔',
+        label_vn: 'View hồ',
+        icon: '🏞️',
+        description: 'Bên hồ, view hồ Hoàn Kiếm'
+    },
+    {
+        id: 'elegant',
+        label_jp: 'エレガント',
+        label_vn: 'Sang trọng',
+        icon: '✨',
+        description: 'Phong cách Pháp, decor cao cấp, không gian đẳng cấp'
+    },
+    {
+        id: 'quiet',
+        label_jp: '静か',
+        label_vn: 'Yên tĩnh',
+        icon: '🤫',
+        description: 'Ít người, không ồn, không gian riêng tư'
+    },
 ] as const;
 
 export type UserNeedId = typeof USER_NEEDS[number]['id'];
 
 /**
  * Keyword Mapping - Map từ khóa tiếng Việt/Nhật sang tag IDs
- * Dùng để parse câu chat của user
+ * Dùng để parse câu chat của user (fallback khi AI không hoạt động)
  */
 export const KEYWORD_MAPPING: Record<string, string[]> = {
     // Work related
@@ -74,6 +159,8 @@ export const KEYWORD_MAPPING: Record<string, string[]> = {
     'laptop': ['work'],
     'wifi': ['work'],
     'ổ cắm': ['work'],
+    'cày': ['work'],
+    'dl': ['work'],
     '仕事': ['work'],
     '勉強': ['work'],
 
@@ -84,6 +171,7 @@ export const KEYWORD_MAPPING: Record<string, string[]> = {
     'bạn gái': ['date'],
     'bạn trai': ['date'],
     'lãng mạn': ['date'],
+    'cưa gái': ['date'],
     'デート': ['date'],
 
     // Reading related
@@ -91,9 +179,7 @@ export const KEYWORD_MAPPING: Record<string, string[]> = {
     'đọc': ['reading'],
     'đọc sách': ['reading'],
     'sách': ['reading'],
-    'yên tĩnh': ['reading', 'quiet'],
     '読書': ['reading'],
-    '静か': ['reading', 'quiet'],
 
     // Photo related
     'photo': ['photo'],
@@ -110,8 +196,6 @@ export const KEYWORD_MAPPING: Record<string, string[]> = {
     'nhóm': ['group'],
     'bạn bè': ['group'],
     'tụ tập': ['group'],
-    'họp': ['group'],
-    'meeting': ['group'],
     'グループ': ['group'],
 
     // Relax related
@@ -131,12 +215,94 @@ export const KEYWORD_MAPPING: Record<string, string[]> = {
     '自然': ['nature'],
     '庭': ['nature'],
 
-    // Additional qualities
-    'quiet': ['reading', 'work'],
-    'yên': ['reading', 'work'],
-    'view': ['photo', 'date'],
-    'pet': ['nature', 'relax'],
-    'thú cưng': ['nature', 'relax'],
+    // Food related - NEW
+    'food': ['food'],
+    'đồ ăn': ['food'],
+    'đói': ['food', 'breakfast'],
+    'ăn': ['food'],
+    'hungry': ['food'],
+    '食事': ['food'],
+
+    // Breakfast - NEW
+    'breakfast': ['breakfast', 'food'],
+    'bữa sáng': ['breakfast', 'food'],
+    'ăn sáng': ['breakfast', 'food'],
+    'sáng': ['breakfast'],
+    '朝食': ['breakfast', 'food'],
+
+    // Dessert - NEW
+    'dessert': ['dessert', 'food'],
+    'bánh': ['dessert', 'food'],
+    'bánh ngọt': ['dessert', 'food'],
+    'tráng miệng': ['dessert', 'food'],
+    'ngọt': ['dessert'],
+    'cake': ['dessert', 'food'],
+    'デザート': ['dessert', 'food'],
+
+    // View - NEW
+    'view': ['view'],
+    'cảnh': ['view'],
+    'phong cảnh': ['view'],
+    'tầng cao': ['view', 'outdoor'],
+    'rooftop': ['view', 'outdoor'],
+    '景色': ['view'],
+
+    // Outdoor - NEW
+    'outdoor': ['outdoor'],
+    'ngoài trời': ['outdoor'],
+    'sân thượng': ['outdoor', 'view'],
+    'ban công': ['outdoor'],
+    '屋外': ['outdoor'],
+
+    // Bar - NEW
+    'bar': ['bar', 'relax'],
+    'rượu': ['bar'],
+    'bia': ['bar'],
+    'cocktail': ['bar'],
+    'バー': ['bar'],
+
+    // Meeting - NEW
+    'meeting': ['meeting', 'work'],
+    'họp': ['meeting', 'work'],
+    'phòng họp': ['meeting', 'work'],
+    'team': ['meeting', 'group'],
+    '会議': ['meeting'],
+
+    // Pet - NEW
+    'pet': ['pet', 'outdoor'],
+    'thú cưng': ['pet', 'outdoor'],
+    'chó': ['pet', 'outdoor'],
+    'mèo': ['pet', 'outdoor'],
+    'ペット': ['pet'],
+
+    // Music - NEW
+    'music': ['music', 'relax'],
+    'âm nhạc': ['music'],
+    'nhạc': ['music'],
+    'live music': ['music'],
+    '音楽': ['music'],
+
+    // Lake - NEW
+    'lake': ['lake', 'view'],
+    'hồ': ['lake', 'view'],
+    'hồ gươm': ['lake', 'view'],
+    'hoàn kiếm': ['lake', 'view'],
+    '湖': ['lake'],
+
+    // Elegant - NEW
+    'elegant': ['elegant'],
+    'sang trọng': ['elegant'],
+    'cao cấp': ['elegant'],
+    'đẳng cấp': ['elegant'],
+    'エレガント': ['elegant'],
+
+    // Quiet - NEW
+    'quiet': ['quiet'],
+    'yên': ['quiet'],
+    'yên tĩnh': ['quiet', 'reading'],
+    'ít người': ['quiet'],
+    'riêng tư': ['quiet'],
+    '静か': ['quiet'],
 };
 
 /**

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import StoreListItem from "@/components/features/StoreListItem";
 import { useStoreData } from "@/hooks/useStoreData";
 import { extractTagsFromText, getRecommendations, USER_NEEDS } from "@/utils/recommendation";
+import { analyzeRequestWithAI } from "@/services/aiService";
 import type { StoreDetail } from "@/types/store";
 
 // Message type
@@ -25,7 +26,7 @@ const RecommendationPage: React.FC = () => {
         {
             id: "welcome",
             role: "bot",
-            text: "こんにちは！🎉 カフェハンターのAIアシスタントです。\n\nどんなカフェをお探しですか？例えば：\n• 「勉強できるカフェ」\n• 「デートにぴったりな場所」\n• 「写真が撮れるおしゃれなカフェ」\n\nお気軽に教えてください！",
+            text: "こんにちは！🎉 カフェハンターのAIアシスタントです。\n\nどんなカフェをお探しですか？例えば：\n• 「勉強できる静かなカフェ」\n• 「デートにぴったりな場所」\n• 「朝ごはんが食べられるカフェ」\n\nお気軽にどうぞ 😊",
             timestamp: new Date(),
         },
     ]);
@@ -38,7 +39,7 @@ const RecommendationPage: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    const handleSendMessage = () => {
+    const handleSendMessage = async () => {
         if (!inputText.trim()) return;
 
         const userMessage: Message = {
@@ -48,19 +49,24 @@ const RecommendationPage: React.FC = () => {
             timestamp: new Date(),
         };
 
+        const userInput = inputText; // Save before clearing
         setMessages((prev) => [...prev, userMessage]);
         setInputText("");
         setIsTyping(true);
 
-        // Extract tags from user input
-        const extractedTags = extractTagsFromText(inputText);
+        try {
+            // 🚀 AIを使用してタグを抽出（非同期）
+            const extractedTags = await analyzeRequestWithAI(userInput);
 
-        // Simulate bot thinking time
-        setTimeout(() => {
+            // AIが空を返した場合はキーワードマッチングにフォールバック
+            const finalTags = extractedTags.length > 0
+                ? extractedTags
+                : extractTagsFromText(userInput);
+
             let botResponse: Message;
 
-            if (extractedTags.length === 0) {
-                // No tags found
+            if (finalTags.length === 0) {
+                // タグが見つからない場合
                 botResponse = {
                     id: `bot-${Date.now()}`,
                     role: "bot",
@@ -68,37 +74,49 @@ const RecommendationPage: React.FC = () => {
                     timestamp: new Date(),
                 };
             } else {
-                // Get recommendations based on tags
-                const recommendedStores = getRecommendations(stores, extractedTags);
+                // タグに基づいてレコメンデーションを取得
+                const recommendedStores = getRecommendations(stores, finalTags);
 
-                // Build bot response text
-                const needLabels = extractedTags
+                // ボットレスポンステキストを構築
+                const needLabels = finalTags
                     .map((tagId) => {
                         const need = USER_NEEDS.find((n) => n.id === tagId);
                         return need ? need.label_jp : tagId;
                     })
-                    .join("、");
+                    .join('、');
 
                 let responseText = "";
                 if (recommendedStores.length > 0) {
-                    responseText = `了解しました！「${needLabels}」に最適なカフェを${recommendedStores.length}件見つけました。✨\n\n以下がおすすめです：`;
+                    responseText = `素敵ですね！ご希望に合うカフェが${recommendedStores.length}件見つかりました 🎉\n\nあなたのお探しの雰囲気（${needLabels}）にぴったりなお店です：`;
                 } else {
-                    responseText = `「${needLabels}」に合うカフェが見つかりませんでした。😢\n\n別の条件で試してみてください。`;
+                    responseText = `申し訳ございません。「${needLabels}」に合うカフェが見つかりませんでした。😢\n\n別の条件で試してみてください。`;
                 }
 
                 botResponse = {
                     id: `bot-${Date.now()}`,
                     role: "bot",
                     text: responseText,
-                    stores: recommendedStores.slice(0, 10), // Max 10 results
-                    tags: extractedTags,
+                    stores: recommendedStores.slice(0, 10), // 最大10件
+                    tags: finalTags,
                     timestamp: new Date(),
                 };
             }
 
             setMessages((prev) => [...prev, botResponse]);
+        } catch (error) {
+            console.error("メッセージ処理エラー:", error);
+
+            // エラーフォールバック
+            const errorResponse: Message = {
+                id: `bot-${Date.now()}`,
+                role: "bot",
+                text: "申し訳ございません。エラーが発生しました。😓\n\nもう一度お試しください。",
+                timestamp: new Date(),
+            };
+            setMessages((prev) => [...prev, errorResponse]);
+        } finally {
             setIsTyping(false);
-        }, 800); // Simulate thinking time
+        }
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -160,8 +178,8 @@ const RecommendationPage: React.FC = () => {
                                     {/* Message Bubble */}
                                     <div
                                         className={`rounded-2xl px-4 py-3 ${message.role === "user"
-                                                ? "bg-amber-700 text-white"
-                                                : "bg-white border shadow-sm"
+                                            ? "bg-amber-700 text-white"
+                                            : "bg-white border shadow-sm"
                                             }`}
                                     >
                                         <p className="text-sm whitespace-pre-line leading-relaxed">
@@ -266,7 +284,7 @@ const RecommendationPage: React.FC = () => {
                         </Button>
                     </div>
                     <p className="text-xs text-gray-500 mt-2 text-center">
-                        例: 「勉強できる静かなカフェ」「デートにぴったりな場所」
+                        例: 「お腹が空いた」「静かに勉強したい」「デートできる場所」
                     </p>
                 </div>
             </div>

@@ -55,7 +55,23 @@ Dự án này là **Frontend-only**, được xây dựng bằng React, TypeScri
    npm install
    ```
 
-3. **Khởi chạy server phát triển (Development Server):**
+3. **Cấu hình API Key (Quan trọng!):**
+   
+   Tạo file `.env` trong thư mục gốc và thêm Gemini API Key:
+   ```bash
+   cp .env.example .env
+   ```
+   
+   Sau đó mở file `.env` và thay thế `your_api_key_here` bằng API key của bạn:
+   ```
+   VITE_GEMINI_API_KEY=AIza...your_actual_key_here
+   ```
+   
+   **Lấy API Key miễn phí tại:** https://aistudio.google.com/app/apikey
+   
+   > **Lưu ý:** File `.env` đã được thêm vào `.gitignore` để bảo mật API key của bạn.
+
+4. **Khởi chạy server phát triển (Development Server):**
    ```bash
    npm run dev
    ```
