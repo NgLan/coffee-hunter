@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import NotFound from "./pages/NotFound";
 import UserFavoritePage from "./pages/UserFavoritePage";
 import UserProfilePage from "./pages/UserProfilePage";
+import RecommendationPage from "./pages/RecommendationPage";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
                         <Route path="/" element={<HomePage />} />
                         <Route path="/search" element={<SearchResultPage />} />
                         <Route path="/map" element={<MapPage />} />
+                        <Route path="/recommend" element={<RecommendationPage />} />
                         <Route path="/store/:id" element={<StoreDetailPage />} />
                         <Route path="/register" element={<RegisterPage />} />
                         <Route path="/login" element={<LoginPage />} />

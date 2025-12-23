@@ -1,13 +1,11 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { MapPin, ArrowRight, Map, Heart } from "lucide-react";
+import { MapPin, ArrowRight, Map, Heart, Bot, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useStoreData } from "@/hooks/useStoreData";
 import { useAuth } from "@/contexts/AuthContext";
-import { NeedSelector } from "@/components/features/NeedSelector";
-import { getRecommendations } from "@/utils/recommendation";
 
 /**
  * Hot Pickロジック：レーティング、レビュー数、重み付きランダムで最大5件
@@ -70,9 +68,6 @@ const HomePage = () => {
     const { currentUser, isAuthenticated } = useAuth();
     const [currentHotPick, setCurrentHotPick] = useState(0);
 
-    // Recommendation states
-    const [selectedNeedIds, setSelectedNeedIds] = useState([]);
-
     // Hot Pick計算（メモ化）
     const hotPickStores = useMemo(() => getHotPickStores(stores), [stores]);
 
@@ -92,25 +87,6 @@ const HomePage = () => {
         getNearByStores(stores, isAuthenticated, favorites),
         [stores, isAuthenticated, favorites]
     );
-
-    // Recommendation計算（メモ化）
-    const recommendedStores = useMemo(() =>
-        getRecommendations(stores, selectedNeedIds),
-        [stores, selectedNeedIds]
-    );
-
-    // Recommendation handlers
-    const handleSelectNeed = (needId) => {
-        setSelectedNeedIds(prev =>
-            prev.includes(needId)
-                ? prev.filter(id => id !== needId)
-                : [...prev, needId]
-        );
-    };
-
-    const handleClearAllNeeds = () => {
-        setSelectedNeedIds([]);
-    };
 
     // Hot Pickナビゲーション
     const nextHotPick = () => {
@@ -140,6 +116,36 @@ const HomePage = () => {
     return (
         <div className="min-h-screen bg-background">
             <Header />
+
+            {/* AI Recommendation Banner */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-200">
+                <div className="container mx-auto px-4 py-6 md:px-8 lg:px-12 max-w-7xl">
+                    <Link to="/recommend">
+                        <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer group">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center shadow-lg">
+                                    <Bot className="h-6 w-6 text-white" />
+                                </div>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="font-bold text-lg text-gray-900">
+                                            AIレコメンド
+                                        </h3>
+                                        <span className="px-2 py-0.5 bg-amber-100 text-amber-800 text-xs font-semibold rounded-full flex items-center gap-1">
+                                            <Sparkles className="h-3 w-3" />
+                                            NEW
+                                        </span>
+                                    </div>
+                                    <p className="text-sm text-gray-600 mt-0.5">
+                                        チャットでカフェを探す - あなたの好みに合わせて提案します
+                                    </p>
+                                </div>
+                            </div>
+                            <ArrowRight className="h-5 w-5 text-amber-700 group-hover:translate-x-1 transition-transform" />
+                        </div>
+                    </Link>
+                </div>
+            </div>
 
             <main className="container mx-auto px-4 py-8 md:px-8 lg:px-12 max-w-7xl">
                 {/* Hot Pick Section */}
@@ -259,77 +265,6 @@ const HomePage = () => {
                             />
                         ))}
                     </div>
-                </section>
-
-                {/* Recommendation Section */}
-                <section className="mb-12">
-                    <div className="mb-6">
-                        <NeedSelector
-                            selectedNeedIds={selectedNeedIds}
-                            onSelectNeed={handleSelectNeed}
-                            onClearAll={handleClearAllNeeds}
-                        />
-                    </div>
-
-                    {selectedNeedIds.length > 0 && (
-                        <div className="space-y-4">
-                            {recommendedStores.length > 0 ? (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                    {recommendedStores.slice(0, 6).map((store) => (
-                                        <Link key={store.id} to={`/store/${store.id}`}>
-                                            <Card className="group overflow-hidden transition-all hover:shadow-lg h-full">
-                                                <CardContent className="p-0">
-                                                    <div className="relative aspect-video overflow-hidden">
-                                                        <img
-                                                            src={store.main_image_url}
-                                                            alt={store.name_jp}
-                                                            className="h-full w-full object-cover transition-transform group-hover:scale-110"
-                                                        />
-                                                    </div>
-                                                    <div className="p-4">
-                                                        <h3 className="font-semibold text-lg line-clamp-1 mb-2">
-                                                            {store.name_jp}
-                                                        </h3>
-                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                                            <MapPin className="h-4 w-4" />
-                                                            <span className="line-clamp-1">{store.address_jp}</span>
-                                                        </div>
-                                                        <div className="mt-2 flex items-center gap-1">
-                                                            <span className="text-yellow-500">⭐</span>
-                                                            <span className="font-medium">{store.avg_rating}</span>
-                                                            <span className="text-xs text-muted-foreground">
-                                                                ({store.review_count})
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        </Link>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="rounded-lg border-2 border-dashed p-12 text-center">
-                                    <p className="text-lg font-medium text-muted-foreground">
-                                        条件に合うカフェが見つかりませんでした
-                                    </p>
-                                    <p className="mt-2 text-sm text-muted-foreground">
-                                        別の条件を選んでみてください
-                                    </p>
-                                </div>
-                            )}
-
-                            {recommendedStores.length > 6 && (
-                                <div className="text-center">
-                                    <Link to="/search">
-                                        <Button variant="outline" className="rounded-full">
-                                            さらに見る ({recommendedStores.length - 6}件)
-                                            <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
-                        </div>
-                    )}
                 </section>
 
                 {/* Near By You Section */}

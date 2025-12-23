@@ -59,6 +59,119 @@ export const USER_NEEDS = [
 export type UserNeedId = typeof USER_NEEDS[number]['id'];
 
 /**
+ * Keyword Mapping - Map từ khóa tiếng Việt/Nhật sang tag IDs
+ * Dùng để parse câu chat của user
+ */
+export const KEYWORD_MAPPING: Record<string, string[]> = {
+    // Work related
+    'work': ['work'],
+    'làm việc': ['work'],
+    'học': ['work'],
+    'học bài': ['work'],
+    'thi': ['work'],
+    'deadline': ['work'],
+    'coding': ['work'],
+    'laptop': ['work'],
+    'wifi': ['work'],
+    'ổ cắm': ['work'],
+    '仕事': ['work'],
+    '勉強': ['work'],
+
+    // Date related
+    'date': ['date'],
+    'hẹn hò': ['date'],
+    'người yêu': ['date'],
+    'bạn gái': ['date'],
+    'bạn trai': ['date'],
+    'lãng mạn': ['date'],
+    'デート': ['date'],
+
+    // Reading related
+    'reading': ['reading'],
+    'đọc': ['reading'],
+    'đọc sách': ['reading'],
+    'sách': ['reading'],
+    'yên tĩnh': ['reading', 'quiet'],
+    '読書': ['reading'],
+    '静か': ['reading', 'quiet'],
+
+    // Photo related
+    'photo': ['photo'],
+    'chụp ảnh': ['photo'],
+    'sống ảo': ['photo'],
+    'check in': ['photo'],
+    'instagram': ['photo'],
+    'đẹp': ['photo'],
+    'decor': ['photo'],
+    '写真': ['photo'],
+
+    // Group related
+    'group': ['group'],
+    'nhóm': ['group'],
+    'bạn bè': ['group'],
+    'tụ tập': ['group'],
+    'họp': ['group'],
+    'meeting': ['group'],
+    'グループ': ['group'],
+
+    // Relax related
+    'relax': ['relax'],
+    'thư giãn': ['relax'],
+    'nghỉ ngơi': ['relax'],
+    'chill': ['relax'],
+    'リラックス': ['relax'],
+
+    // Nature related
+    'nature': ['nature'],
+    'thiên nhiên': ['nature'],
+    'cây': ['nature'],
+    'vườn': ['nature'],
+    'sân vườn': ['nature'],
+    'xanh': ['nature'],
+    '自然': ['nature'],
+    '庭': ['nature'],
+
+    // Additional qualities
+    'quiet': ['reading', 'work'],
+    'yên': ['reading', 'work'],
+    'view': ['photo', 'date'],
+    'pet': ['nature', 'relax'],
+    'thú cưng': ['nature', 'relax'],
+};
+
+/**
+ * Extract tags from user's chat text
+ * @param text - Câu chat của user (tiếng Việt hoặc tiếng Nhật)
+ * @returns Mảng các tag IDs tương ứng
+ * 
+ * @example
+ * extractTagsFromText("Tôi muốn tìm quán để học bài") 
+ * // => ['work']
+ * 
+ * extractTagsFromText("Quán nào đẹp để hẹn hò và chụp ảnh?")
+ * // => ['date', 'photo']
+ */
+export const extractTagsFromText = (text: string): string[] => {
+    if (!text || text.trim().length === 0) {
+        return [];
+    }
+
+    const normalizedText = text.toLowerCase().trim();
+    const foundTags = new Set<string>();
+
+    // Duyệt qua tất cả keywords trong mapping
+    Object.entries(KEYWORD_MAPPING).forEach(([keyword, tags]) => {
+        // Check if keyword appears in text
+        if (normalizedText.includes(keyword.toLowerCase())) {
+            // Add all related tags
+            tags.forEach(tag => foundTags.add(tag));
+        }
+    });
+
+    return Array.from(foundTags);
+};
+
+/**
  * Get recommended stores based on user needs
  * @param stores - Danh sách tất cả các quán
  * @param selectedNeedIds - Mảng các nhu cầu đã chọn
