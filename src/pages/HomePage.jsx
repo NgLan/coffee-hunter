@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import Header from "@/components/layout/Header";
 import { useStoreData } from "@/hooks/useStoreData";
 import { useAuth } from "@/contexts/AuthContext";
+import { NeedSelector } from "@/components/features/NeedSelector";
+import { getRecommendations } from "@/utils/recommendation";
 
 /**
  * Hot Pickロジック：レーティング、レビュー数、重み付きランダムで最大5件
@@ -68,6 +70,9 @@ const HomePage = () => {
     const { currentUser, isAuthenticated } = useAuth();
     const [currentHotPick, setCurrentHotPick] = useState(0);
 
+    // Recommendation states
+    const [selectedNeedIds, setSelectedNeedIds] = useState([]);
+
     // Hot Pick計算（メモ化）
     const hotPickStores = useMemo(() => getHotPickStores(stores), [stores]);
 
@@ -87,6 +92,25 @@ const HomePage = () => {
         getNearByStores(stores, isAuthenticated, favorites),
         [stores, isAuthenticated, favorites]
     );
+
+    // Recommendation計算（メモ化）
+    const recommendedStores = useMemo(() =>
+        getRecommendations(stores, selectedNeedIds),
+        [stores, selectedNeedIds]
+    );
+
+    // Recommendation handlers
+    const handleSelectNeed = (needId) => {
+        setSelectedNeedIds(prev =>
+            prev.includes(needId)
+                ? prev.filter(id => id !== needId)
+                : [...prev, needId]
+        );
+    };
+
+    const handleClearAllNeeds = () => {
+        setSelectedNeedIds([]);
+    };
 
     // Hot Pickナビゲーション
     const nextHotPick = () => {
@@ -237,6 +261,77 @@ const HomePage = () => {
                     </div>
                 </section>
 
+                {/* Recommendation Section */}
+                <section className="mb-12">
+                    <div className="mb-6">
+                        <NeedSelector
+                            selectedNeedIds={selectedNeedIds}
+                            onSelectNeed={handleSelectNeed}
+                            onClearAll={handleClearAllNeeds}
+                        />
+                    </div>
+
+                    {selectedNeedIds.length > 0 && (
+                        <div className="space-y-4">
+                            {recommendedStores.length > 0 ? (
+                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                    {recommendedStores.slice(0, 6).map((store) => (
+                                        <Link key={store.id} to={`/store/${store.id}`}>
+                                            <Card className="group overflow-hidden transition-all hover:shadow-lg h-full">
+                                                <CardContent className="p-0">
+                                                    <div className="relative aspect-video overflow-hidden">
+                                                        <img
+                                                            src={store.main_image_url}
+                                                            alt={store.name_jp}
+                                                            className="h-full w-full object-cover transition-transform group-hover:scale-110"
+                                                        />
+                                                    </div>
+                                                    <div className="p-4">
+                                                        <h3 className="font-semibold text-lg line-clamp-1 mb-2">
+                                                            {store.name_jp}
+                                                        </h3>
+                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                            <MapPin className="h-4 w-4" />
+                                                            <span className="line-clamp-1">{store.address_jp}</span>
+                                                        </div>
+                                                        <div className="mt-2 flex items-center gap-1">
+                                                            <span className="text-yellow-500">⭐</span>
+                                                            <span className="font-medium">{store.avg_rating}</span>
+                                                            <span className="text-xs text-muted-foreground">
+                                                                ({store.review_count})
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="rounded-lg border-2 border-dashed p-12 text-center">
+                                    <p className="text-lg font-medium text-muted-foreground">
+                                        条件に合うカフェが見つかりませんでした
+                                    </p>
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        別の条件を選んでみてください
+                                    </p>
+                                </div>
+                            )}
+
+                            {recommendedStores.length > 6 && (
+                                <div className="text-center">
+                                    <Link to="/search">
+                                        <Button variant="outline" className="rounded-full">
+                                            さらに見る ({recommendedStores.length - 6}件)
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Button>
+                                    </Link>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </section>
+
                 {/* Near By You Section */}
                 <section className="mb-12">
                     <div className="mb-6 flex items-center justify-between">
@@ -259,16 +354,16 @@ const HomePage = () => {
                     <div className="grid gap-4 sm:grid-cols-2">
                         {nearbyStores.map((store) => {
                             const isLiked = isFavorite(store.id);
-                            
+
                             return (
                                 <Link key={store.id} to={`/store/${store.id}`} className="block">
                                     <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
                                         <div className="flex gap-4 p-4">
                                             <div className="w-24 h-24 rounded-lg overflow-hidden">
-                                                <img 
-                                                    src={store.images[0]} 
-                                                    alt={store.name_jp} 
-                                                    className="w-full h-full object-cover" 
+                                                <img
+                                                    src={store.images[0]}
+                                                    alt={store.name_jp}
+                                                    className="w-full h-full object-cover"
                                                 />
                                             </div>
 
@@ -283,15 +378,13 @@ const HomePage = () => {
                                                         <Button
                                                             size="icon"
                                                             variant="ghost"
-                                                            className={`h-8 w-8 rounded-full transition-all ${
-                                                                isLiked ? "bg-red-500 hover:bg-red-600" : "hover:bg-gray-100"
-                                                            }`}
+                                                            className={`h-8 w-8 rounded-full transition-all ${isLiked ? "bg-red-500 hover:bg-red-600" : "hover:bg-gray-100"
+                                                                }`}
                                                             onClick={(e) => handleToggleFavorite(e, store.id)}
                                                         >
                                                             <Heart
-                                                                className={`h-4 w-4 transition-all ${
-                                                                    isLiked ? "fill-white text-white" : "text-gray-400"
-                                                                }`}
+                                                                className={`h-4 w-4 transition-all ${isLiked ? "fill-white text-white" : "text-gray-400"
+                                                                    }`}
                                                             />
                                                         </Button>
                                                     )}
@@ -333,7 +426,7 @@ const HomePage = () => {
                     <div className="space-y-4">
                         {stores.slice(0, 8).map((store) => {
                             const isLiked = isFavorite(store.id);
-                            
+
                             return (
                                 <Link
                                     key={store.id}
@@ -358,26 +451,24 @@ const HomePage = () => {
                                                         <h3 className="font-bold text-xl">
                                                             {store.name_jp}
                                                         </h3>
-                                                        
+
                                                         {/* Favorite Button */}
                                                         {isAuthenticated && (
                                                             <Button
                                                                 size="icon"
                                                                 variant="ghost"
-                                                                className={`h-10 w-10 rounded-full shadow-lg transition-all ${
-                                                                    isLiked ? "bg-red-500 hover:bg-red-600" : "hover:bg-gray-100"
-                                                                }`}
+                                                                className={`h-10 w-10 rounded-full shadow-lg transition-all ${isLiked ? "bg-red-500 hover:bg-red-600" : "hover:bg-gray-100"
+                                                                    }`}
                                                                 onClick={(e) => handleToggleFavorite(e, store.id)}
                                                             >
                                                                 <Heart
-                                                                    className={`h-5 w-5 transition-all ${
-                                                                        isLiked ? "fill-white text-white" : "text-gray-400"
-                                                                    }`}
+                                                                    className={`h-5 w-5 transition-all ${isLiked ? "fill-white text-white" : "text-gray-400"
+                                                                        }`}
                                                                 />
                                                             </Button>
                                                         )}
                                                     </div>
-                                                    
+
                                                     <div className="space-y-2">
                                                         <div className="flex items-center gap-2 text-sm">
                                                             <MapPin className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
