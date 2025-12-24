@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { MOCK_NOTIFICATIONS } from "@/mocks/data/notifications";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 /**
  * Header component - Thanh điều hướng chính
@@ -25,6 +25,7 @@ import { MOCK_NOTIFICATIONS } from "@/mocks/data/notifications";
 const Header = () => {
     const navigate = useNavigate();
     const { currentUser, isAuthenticated, logout } = useAuth();
+    const { notifications, unreadCount } = useNotifications();
     const [searchParams] = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
     
@@ -35,9 +36,6 @@ const Header = () => {
             setSearchQuery(q);
         }
     }, [searchParams]);
-
-    // Đếm số thông báo chưa đọc
-    const unreadCount = MOCK_NOTIFICATIONS.filter(n => !n.is_read).length;
 
     console.log("Current User in Header:", currentUser);
 
@@ -106,38 +104,22 @@ const Header = () => {
 
                         {/* Notifications */}
                         {isAuthenticated && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="relative">
-                                        <Bell className="h-5 w-5" />
-                                        {unreadCount > 0 && (
-                                            <Badge
-                                                variant="destructive"
-                                                className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
-                                            >
-                                                {unreadCount}
-                                            </Badge>
-                                        )}
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-80">
-                                    <div className="p-2">
-                                        <h3 className="mb-2 font-semibold">通知</h3>
-                                        {MOCK_NOTIFICATIONS.slice(0, 3).map((notif) => (
-                                            <div
-                                                key={notif.id}
-                                                className={`mb-2 rounded-lg border p-3 ${!notif.is_read ? "bg-accent/50" : ""
-                                                    }`}
-                                            >
-                                                <p className="text-sm font-medium">{notif.title_jp}</p>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {notif.content_jp}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="relative"
+                                onClick={() => navigate('/notifications')}
+                            >
+                                <Bell className="h-5 w-5" />
+                                {unreadCount > 0 && (
+                                    <Badge
+                                        variant="destructive"
+                                        className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs flex items-center justify-center"
+                                    >
+                                        {unreadCount}
+                                    </Badge>
+                                )}
+                            </Button>
                         )}
 
                         {/* User Menu */}
