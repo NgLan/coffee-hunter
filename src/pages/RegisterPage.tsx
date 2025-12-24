@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import styles from '../components/features/AuthForm.module.css';
 import { useToast } from '@/hooks/use-toast';
+import AuthBackground from '@/components/layout/AuthBackground';
 
 const RegisterPage: React.FC = () => {
     const navigate = useNavigate();
@@ -150,6 +151,8 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
+        <>
+        <AuthBackground />
         <div className={styles.pageContainer}>
             <div className={styles.formWrapper}>
                 <div className={styles.header}>
@@ -284,6 +287,7 @@ const RegisterPage: React.FC = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 };
 

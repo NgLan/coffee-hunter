@@ -2,7 +2,9 @@
 
 .pageContainer {
   min-height: 100vh;
-  background-color: #fff;
+  /* background-image: url(https://ik.imagekit.io/tvlk/blog/2022/10/quan-cafe-nhieu-cay-xanh-tphcm-1.jpeg?tr=dpr-2,w-675);
+  background-color: #ac6737; */
+  background-color: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
