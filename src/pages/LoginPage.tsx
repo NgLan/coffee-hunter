@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+// import { useToast } from '@/hooks/use-toast';
+import AuthBackground from '@/components/layout/AuthBackground'; // Đảm bảo bạn đã có component này
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -23,17 +25,8 @@ const LoginPage: React.FC = () => {
         }
     };
 
-
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // // Validate format (silently)
-        // if (!validateEmail(formData.email) || !validatePassword(formData.password)) {
-        //     setSubmitError('メールアドレスまたはパスワードが正しくありません');
-        //     return;
-        // }
-
         setIsLoading(true);
 
         // Simulate API call delay
@@ -63,108 +56,110 @@ const LoginPage: React.FC = () => {
         navigate('/register');
     };
 
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
-      <div className="w-full max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-          
-          {/* Left side - Title and Description */}
-          <div className="hidden lg:flex lg:flex-col lg:justify-center">
-            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-              Coffee Hunter
-            </h1>
-            <p className="text-xs lg:text-sm text-gray-700 leading-relaxed">
-              カフェ・コーヒーハンターは、様々な場所でコーヒーを楽しんだ人のための、レコメンド機能を備えたアプリケーションです。より多くの場所を知ることで、まるでハンターのごとく新たな場所を発見することができます。また、様々な飲み方を試すことで、自分好みのコーヒーに出会える可能性も広がります。
-            </p>
-          </div>
+    return (
+        <>
+            {/* Component nền (nếu bạn chưa có thì nhớ tạo hoặc comment lại) */}
+            <AuthBackground />
 
-          {/* Right side - Form */}
-          <div className="lg:col-span-1">
-            {/* Mobile title */}
-            <div className="lg:hidden mb-8">
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                Coffee Hunter
-              </h1>
-              <p className="text-xl text-gray-700 leading-relaxed">
-                カフェ・コーヒーハンターは、様々な場所でコーヒーを楽しんだ人のための、レコメンド機能を備えたアプリケーションです。より多くの場所を知ることで、まるでハンターのごとく新たな場所を発見することができます。
-              </p>
+            <div className="min-h-screen flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+                
+                {/* --- KHUNG CHÍNH (CONTAINER) --- */}
+                <div className="w-full max-w-6xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col lg:flex-row">
+                    
+                    {/* --- LEFT SIDE: Intro --- */}
+                    {/* lg:border-r: Tạo đường kẻ ngăn cách bên phải */}
+                    <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center bg-gray-50 lg:bg-white lg:border-r border-gray-200">
+                        <div className="max-w-md mx-auto lg:mx-0">
+                            <h1 className="text-4xl lg:text-5xl font-bold text-amber-700 mb-6">
+                                Coffee Hunter
+                            </h1>
+                            <p className="text-base lg:text-lg text-gray-600 leading-relaxed font-medium text-justify">
+                                カフェ・コーヒーハンターは、様々な場所でコーヒーを楽しんだ人のための、レコメンド機能を備えたアプリケーションです。
+                                <br /><br />
+                                より多くの場所を知ることで、まるでハンターのごとく新たな場所を発見することができます。また、様々な飲み方を試すことで、自分好みのコーヒーに出会える可能性も広がります。
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* --- RIGHT SIDE: Form --- */}
+                    <div className="lg:w-1/2 p-8 lg:p-12 flex flex-col justify-center">
+                        <div className="max-w-md mx-auto w-full">
+                            <h2 className="text-2xl lg:text-3xl font-bold text-center mb-8 text-gray-800">
+                                ログイン
+                            </h2>
+
+                            <form onSubmit={handleSubmit} className="space-y-6">
+                                {/* Email Input */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">ユーザー名</label>
+                                    <input
+                                        type="email"
+                                        placeholder="example@email.com"
+                                        value={formData.email}
+                                        onChange={(e) => handleInputChange('email', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                                        disabled={isLoading}
+                                    />
+                                </div>
+                                {/* Password Input */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">パスワード</label>
+                                    <input
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={(e) => handleInputChange('password', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition"
+                                        disabled={isLoading}
+                                    />
+                                </div>
+
+                                {/* Error Message */}
+                                {submitError && (
+                                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm text-center">
+                                        {submitError}
+                                    </div>
+                                )}
+
+                                {/* Submit Button */}
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 text-white font-bold py-3.5 rounded-lg transition duration-200 transform hover:scale-[1.02] shadow-md"
+                                >
+                                    {isLoading ? 'ログイン中...' : 'ログイン'}
+                                </button>
+
+                                {/* Register Link (Màu vàng nhạt) */}
+                                <div className="text-center pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={handleRegisterLink}
+                                        disabled={isLoading}
+                                        className="w-full bg-yellow-100 hover:bg-yellow-200 disabled:bg-gray-100 text-amber-900 font-bold py-3.5 rounded-lg transition duration-200 transform hover:scale-[1.02] shadow-sm mt-2"
+                                    >
+                                        アカウント作成
+                                    </button>
+                                </div>
+
+                                {/* Back to Home Link (Giữ lại nút này từ code cũ của bạn) */}
+                                <div className="text-center pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/')}
+                                        disabled={isLoading}
+                                        className="text-amber-600 hover:text-amber-700 disabled:text-amber-400 disabled:cursor-not-allowed text-sm underline transition"
+                                    >
+                                        ホームページへ戻る
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div className="bg-white rounded-lg shadow-md p-8 border border-gray-200">
-              <h2 className="text-2xl lg:text-2xl font-bold text-center mb-8 text-gray-800">
-                ログイン
-              </h2>
-
-             <form onSubmit={handleSubmit} className="space-y-5">
-                {/* Email Input */}
-                <div>
-                  <input
-                    type="email"
-                    placeholder="ユーザー名"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition text-sm md:text-base placeholder-gray-400"
-                    disabled={isLoading}
-                  />
-                </div>
-                {/* Password Input */}
-                <div>
-                  <input
-                    type="password"
-                    placeholder="パスワード"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition text-sm md:text-base placeholder-gray-400"
-                    disabled={isLoading}
-                  />
-                </div>
-
-                {/* Error Message */}
-                {submitError && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm text-center">
-                    {submitError}
-                  </div>
-                )}
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-amber-600 hover:bg-amber-700 disabled:bg-amber-400 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-md transition duration-200 transform hover:scale-105 active:scale-95 text-sm md:text-base"
-                >
-                  {isLoading ? 'ログイン中...' : 'ログイン'}
-                </button>
-
-                {/* Register Link */}
-                <div className="text-center pt-4">
-                  <button
-                    type="button"
-                    onClick={handleRegisterLink}
-                    disabled={isLoading}
-                    className="w-full bg-yellow-100 hover:bg-yellow-200 disabled:bg-yellow-50 disabled:cursor-not-allowed text-amber-700 hover:text-amber-800 font-semibold py-3 rounded-md transition duration-200 text-sm md:text-base"
-                  >
-                    アカウント作成
-                  </button>
-                </div>
-
-                {/* Back to Home Link */}
-                <div className="text-center pt-2">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/')}
-                    disabled={isLoading}
-                    className="text-amber-600 hover:text-amber-700 disabled:text-amber-400 disabled:cursor-not-allowed text-sm underline transition"
-                  >
-                    ホームページへ戻る
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+        </>
+    );
 };
 
 export default LoginPage;
