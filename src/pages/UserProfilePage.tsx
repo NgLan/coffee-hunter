@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,17 +11,20 @@ import { MOCK_USERS } from "@/mocks/data/users";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const UserProfilePage = () => {
-    const { currentUser } = useAuth();
+    const { isAuthenticated, currentUser } = useAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
 
     const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState<UserType | null>(currentUser);
 
-    if (!currentUser) {
-        navigate("/login");
-        return null;
-    }
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate("/login");
+        }
+    }, [isAuthenticated, navigate]);
+
+    if (!isAuthenticated || !currentUser) return null;
 
     const handleUpdateField = (field: keyof UserType, value: string) => {
         if (userData) {
