@@ -33,4 +33,5 @@ export interface StoreDetail extends Store {
     services: string[];    // Mảng tên service từ bảng services join qua store_services
     space_type: "indoor" | "outdoor" | "both"; // Loại không gian: trong nhà, ngoài trời, hoặc cả hai
     distance?: number;     // Khoảng cách từ vị trí hiện tại (km) - optional, dùng cho display
+    tags?: string[];       // Tags cho recommendation: ['work', 'date', 'reading', 'photo', etc]
 }

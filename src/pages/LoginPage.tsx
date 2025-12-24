@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import styles from '../components/features/AuthForm.module.css';
-// import { useToast } from '@/hooks/use-toast';
 
 const LoginPage: React.FC = () => {
     const navigate = useNavigate();
@@ -25,23 +23,7 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    // Validate email format
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
 
-    // Validate password strength (at least 2 out of 3: letters, numbers, symbols)
-    const validatePassword = (password: string): boolean => {
-        if (password.length === 0) return false;
-
-        const hasLetters = /[a-zA-Z]/.test(password);
-        const hasNumbers = /[0-9]/.test(password);
-        const hasSymbols = /[!@#$%^&*()_+\-=\[\]{};:"\\|,.<>\/?]/.test(password);
-
-        const strengthCount = [hasLetters, hasNumbers, hasSymbols].filter(Boolean).length;
-        return strengthCount >= 2;
-    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -81,11 +63,60 @@ const LoginPage: React.FC = () => {
         navigate('/register');
     };
 
-    return (
-        <div className={styles.pageContainer}>
-            <div className={styles.formWrapper}>
-                <div className={styles.header}>
-                    <h1 className={styles.appTitle}>Coffee Hunter</h1>
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+      <div className="w-full max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          
+          {/* Left side - Title and Description */}
+          <div className="hidden lg:flex lg:flex-col lg:justify-center">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
+              Coffee Hunter
+            </h1>
+            <p className="text-xs lg:text-sm text-gray-700 leading-relaxed">
+              カフェ・コーヒーハンターは、様々な場所でコーヒーを楽しんだ人のための、レコメンド機能を備えたアプリケーションです。より多くの場所を知ることで、まるでハンターのごとく新たな場所を発見することができます。また、様々な飲み方を試すことで、自分好みのコーヒーに出会える可能性も広がります。
+            </p>
+          </div>
+
+          {/* Right side - Form */}
+          <div className="lg:col-span-1">
+            {/* Mobile title */}
+            <div className="lg:hidden mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Coffee Hunter
+              </h1>
+              <p className="text-xl text-gray-700 leading-relaxed">
+                カフェ・コーヒーハンターは、様々な場所でコーヒーを楽しんだ人のための、レコメンド機能を備えたアプリケーションです。より多くの場所を知ることで、まるでハンターのごとく新たな場所を発見することができます。
+              </p>
+            </div>
+
+            <div className="bg-white rounded-lg shadow-md p-8 border border-gray-200">
+              <h2 className="text-2xl lg:text-2xl font-bold text-center mb-8 text-gray-800">
+                ログイン
+              </h2>
+
+             <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Email Input */}
+                <div>
+                  <input
+                    type="email"
+                    placeholder="ユーザー名"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition text-sm md:text-base placeholder-gray-400"
+                    disabled={isLoading}
+                  />
+                </div>
+                {/* Password Input */}
+                <div>
+                  <input
+                    type="password"
+                    placeholder="パスワード"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600 focus:border-transparent transition text-sm md:text-base placeholder-gray-400"
+                    disabled={isLoading}
+                  />
                 </div>
 
                 <div className={styles.formContainer}>
@@ -157,9 +188,13 @@ const LoginPage: React.FC = () => {
                         </div>
                     </form>
                 </div>
+              </form>
             </div>
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 };
 
 export default LoginPage;

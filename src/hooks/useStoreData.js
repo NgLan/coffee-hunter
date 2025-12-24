@@ -1,16 +1,78 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { MOCK_STORES } from "@/mocks/data/stores";
 import { initReviews, addReview as persistAddReview } from "@/mocks/data/reviews";
 import { MOCK_FAVORITES } from "@/mocks/data/users";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Custom hook để quản lý dữ liệu stores
  * Bao gồm filter, sort và các thao tác liên quan
+ * Favorites được lưu theo từng user trong localStorage
  */
 export const useStoreData = () => {
+    const { currentUser, isAuthenticated } = useAuth();
     const [stores, setStores] = useState(MOCK_STORES);
     const [reviews, setReviews] = useState(() => initReviews());
-    const [favorites, setFavorites] = useState(MOCK_FAVORITES);
+    
+    // State để lưu danh sách favorites của user hiện tại
+    // Lưu theo format: favorites_${userId} = [storeId1, storeId2, ...]
+    const [favorites, setFavorites] = useState(() => {
+        if (!currentUser?.id) return [];
+        
+        try {
+            const storageKey = `favorites_${currentUser.id}`;
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                return Array.isArray(parsed) ? parsed : [];
+            }
+        } catch (e) {
+            console.error("Error parsing favorites:", e);
+        }
+        
+        // Fallback: Load từ MOCK_FAVORITES cho user này
+        return MOCK_FAVORITES
+            .filter(fav => fav.user_id === currentUser.id)
+            .map(fav => fav.store_id);
+    });
+
+    // Load favorites khi user thay đổi (login/logout)
+    useEffect(() => {
+        if (!currentUser?.id) {
+            setFavorites([]);
+            return;
+        }
+        
+        try {
+            const storageKey = `favorites_${currentUser.id}`;
+            const saved = localStorage.getItem(storageKey);
+            if (saved) {
+                const parsed = JSON.parse(saved);
+                setFavorites(Array.isArray(parsed) ? parsed : []);
+            } else {
+                // Load từ MOCK_FAVORITES nếu chưa có trong localStorage
+                const mockFavs = MOCK_FAVORITES
+                    .filter(fav => fav.user_id === currentUser.id)
+                    .map(fav => fav.store_id);
+                setFavorites(mockFavs);
+            }
+        } catch (e) {
+            console.error("Error loading favorites:", e);
+            setFavorites([]);
+        }
+    }, [currentUser?.id]);
+
+    // Sync favorites với localStorage mỗi khi thay đổi
+    useEffect(() => {
+        if (!currentUser?.id) return;
+        
+        try {
+            const storageKey = `favorites_${currentUser.id}`;
+            localStorage.setItem(storageKey, JSON.stringify(favorites));
+        } catch (e) {
+            console.error("Error saving favorites:", e);
+        }
+    }, [favorites, currentUser?.id]);
 
     // Lấy reviews theo store ID
     const getReviewsByStoreId = (storeId) => {
@@ -19,21 +81,33 @@ export const useStoreData = () => {
 
     // Kiểm tra store có phải favorite không
     const isFavorite = (storeId) => {
-        return favorites.includes(storeId);
+        if (!isAuthenticated || !currentUser?.id) return false;
+        const numericStoreId = typeof storeId === 'string' ? parseInt(storeId) : storeId;
+        return favorites.includes(numericStoreId);
     };
 
     // Toggle favorite
     const toggleFavorite = (storeId) => {
-        setFavorites((prev) => {
-            if (prev.includes(storeId)) {
-                return prev.filter((id) => id !== storeId);
-            }
-            return [...prev, storeId];
-        });
+        if (!isAuthenticated || !currentUser?.id) {
+            console.warn("User must be logged in to favorite stores");
+            return;
+        }
+
+        const numericStoreId = typeof storeId === 'string' ? parseInt(storeId) : storeId;
+        const isCurrentlyFavorite = favorites.includes(numericStoreId);
+
+        if (isCurrentlyFavorite) {
+            // Xóa khỏi favorites
+            setFavorites((prev) => prev.filter(id => id !== numericStoreId));
+        } else {
+            // Thêm vào favorites
+            setFavorites((prev) => [...prev, numericStoreId]);
+        }
     };
 
-    // Lấy favorite stores
+    // Lấy favorite stores của user hiện tại
     const getFavoriteStores = () => {
+        if (!isAuthenticated || !currentUser?.id) return [];
         return stores.filter((store) => favorites.includes(store.id));
     };
 
@@ -96,17 +170,15 @@ export const useStoreData = () => {
     // Thêm review mới vào danh sách và cập nhật store stats (avg_rating, review_count)
     const addReview = (storeId, newReview) => {
         // Persist review to localStorage via mocks helper
-        // We pass a copy: the mock's addReview expects fields without 'id' and 'created_at'
         const payloadToPersist = {
-                ...newReview,
-                store_id: storeId,
-                rating: typeof newReview.rating === 'number' ? newReview.rating : Number(newReview.rating) || 0,
-                comment: newReview.comment || '',
-                images: Array.isArray(newReview.images) ? newReview.images : [],
-                user_name: newReview.user_name || newReview.author || '匿名',
-                user_avatar: newReview.user_avatar || newReview.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=random',
-                // ensure we don't include keys that mock doesn't expect id/created_at
-            };
+            ...newReview,
+            store_id: storeId,
+            rating: typeof newReview.rating === 'number' ? newReview.rating : Number(newReview.rating) || 0,
+            comment: newReview.comment || '',
+            images: Array.isArray(newReview.images) ? newReview.images : [],
+            user_name: newReview.user_name || newReview.author || '匿名',
+            user_avatar: newReview.user_avatar || newReview.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=random',
+        };
         const createdReview = persistAddReview(payloadToPersist);
         console.log('[useStoreData] addReview persisted:', createdReview);
 
@@ -129,7 +201,7 @@ export const useStoreData = () => {
                 }
                 return s;
             })
-            );
+        );
 
         return createdReview;
     };

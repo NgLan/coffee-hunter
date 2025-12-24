@@ -24,7 +24,7 @@ export const MOCK_REVIEWS: Review[] = [
         store_id: 1,
         rating: 4,
         comment:
-            "コーヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
+            "コヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
         created_at: "2024-11-14T15:45:00",
         images: [],
         user_name: "佐藤花子",
@@ -68,18 +68,18 @@ export const MOCK_REVIEWS: Review[] = [
     },
     {
         id: 5,
-        user_id: 3,
+        user_id: 2,
         store_id: 1,
         rating: 4,
-        comment: "コーヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
+        comment: "コヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
         created_at: "2024-11-14T15:45:00",
         images: [],
-        user_name: "佐藤花子",
+         user_name: "佐藤花子",
         user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sato",
     },
     {
         id: 6,
-        user_id: 2,
+        user_id: 3,
         store_id: 1,
         rating: 2,
         comment: "コーヒーの味は素晴らしいです。ただ、週末は少し混雑していて、席を見つけるのが大変でした。それでも、また来たいカフェです。",
@@ -87,8 +87,9 @@ export const MOCK_REVIEWS: Review[] = [
         images: [
             "https://images.unsplash.com/photo-1511920170033-f8396924c348?w=600",
         ],
-        user_name: "佐藤花子",
-        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=sato",
+        user_name: "鈴木一郎",
+        user_avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=suzuki",
+       
     },
 ];
 
