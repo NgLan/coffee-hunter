@@ -143,6 +143,18 @@ const LoginPage: React.FC = () => {
                                 アカウントをお持ちでない方はこちら
                             </button>
                         </div>
+
+                        {/* Back to Home Link */}
+                        <div className={styles.linkRow}>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/')}
+                                className={styles.link}
+                                disabled={isLoading}
+                            >
+                                ホームへ戻る
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
