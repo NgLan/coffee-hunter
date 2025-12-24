@@ -1,5 +1,5 @@
 import React from "react";
-import { MapPin, Star, Heart, ArrowRight } from "lucide-react";
+import { MapPin, Star, Heart, ArrowRight, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,8 +35,13 @@ const StoreCard = ({ store, compact = false }) => {
                                 <span>{store.avg_rating}</span>
                                 <span>({store.review_count})</span>
                             </div>
-                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
-                                {store.address_jp}
+                            <p className="text-xs text-muted-foreground line-clamp-1 mt-1 flex items-center gap-1">
+                                <MapPin className="h-3 w-3 inline flex-shrink-0" />
+                                {store.address_jp.split('市')[1]?.split('通り')[0]?.trim() || store.address_jp}
+                            </p>
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                                <Clock className="h-3 w-3 inline flex-shrink-0" />
+                                {store.opening_hours_jp || '営業時間未定'}
                             </p>
                         </div>
 

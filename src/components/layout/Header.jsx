@@ -141,45 +141,50 @@ const Header = () => {
                         )}
 
                         {/* User Menu */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                    {isAuthenticated && currentUser?.avatar_url ? (
-                                        <img
-                                            src={currentUser.avatar_url}
-                                            alt={currentUser.name}
-                                            className="h-8 w-8 rounded-full"
-                                        />
-                                    ) : (
-                                        <User className="h-5 w-5" />
-                                    )}
+                        {isAuthenticated ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon">
+                                        {currentUser?.avatar_url ? (
+                                            <img
+                                                src={currentUser.avatar_url}
+                                                alt={currentUser.name}
+                                                className="h-8 w-8 rounded-full"
+                                            />
+                                        ) : (
+                                            <User className="h-5 w-5" />
+                                        )}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => navigate("/profile")}>
+                                        プロフィール
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => navigate("/favorites")}>
+                                        お気に入り
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={logout}>
+                                        ログアウト
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        ) : (
+                            <div className="flex items-center gap-2">
+                                <Button 
+                                    onClick={() => navigate("/login")}
+                                    variant="outline"
+                                    className="rounded-lg px-6"
+                                >
+                                    ログイン
                                 </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                {isAuthenticated ? (
-                                    <>
-                                        <DropdownMenuItem onClick={() => navigate("/profile")}>
-                                            プロフィール
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => navigate("/favorites")}>
-                                            お気に入り
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={logout}>
-                                            ログアウト
-                                        </DropdownMenuItem>
-                                    </>
-                                ) : (
-                                    <>
-                                        <DropdownMenuItem onClick={() => navigate("/login")}>
-                                            ログイン
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => navigate("/register")}>
-                                            新規登録
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                                <Button 
+                                    onClick={() => navigate("/register")}
+                                    className="rounded-lg px-6"
+                                >
+                                    登録
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
